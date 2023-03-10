@@ -6,10 +6,16 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# resize fs
+echo "Resizing file system"
+root_device=$(df / | awk 'NR==2{sub(/p[0-9]+$/, "", $1); print $1}')
+sudo growpart ${root_device} 2
+sudo resize2fs ${root_device}p2
+
 # Parse command line arguments
 if [[ $# -ne 2 ]]; then
     echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
-    exit 1
+    exit 0
 fi
 
 robot_model="$1"
@@ -32,6 +38,5 @@ dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb
 cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
 bash /usr/lib/husarion/custom_config_${robot_model}.sh
 
-
 # Print success message
-echo "Configuration files copied successfully for robot model $robot_model and ROS version $ros_version"
+echo "Configuration files copied successfully for robot model \"$robot_model\" and ROS version \"$ros_version\""
