@@ -27,8 +27,8 @@ do
     cp "$file" "/usr/lib/husarion/custom_config_${dirname}.sh"
 done
 
-# Copy the setup_robot_configuration.sh script to /usr/local/sbin/
-cp $MY_PATH/setup_robot_configuration.sh /usr/local/sbin/
+# Copy the setup_robot_configuration script to /usr/local/sbin/
+cp $MY_PATH/setup_robot_configuration /usr/local/sbin/
 
 # Copy all files in the robots directory to /etc/husarion/robot-configs/
 mkdir -p /etc/husarion/robot_configs/

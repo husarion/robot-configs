@@ -34,5 +34,5 @@ export ROS_VERSION=ros2_humble
 # Run the configuration
 # ========================
 
-setup_robot_configuration.sh $ROBOT_MODEL $ROS_VERSION
+setup_robot_configuration $ROBOT_MODEL $ROS_VERSION
 ```
