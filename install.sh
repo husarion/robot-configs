@@ -15,7 +15,7 @@ echo "Installing configs for:"
 for file in $(find ${MY_PATH}/robots -name "custom_config.sh")
 do
     # Get the parent directory name and replace '/' with '-'
-    dirname=$(dirname "$file" | sed 's/robots\///g')
+    dirname=$(basename $(dirname "$file"))
 
     # Print the directory name for debugging purposes
     echo $dirname
