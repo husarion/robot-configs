@@ -1,0 +1,15 @@
+services:
+
+  rosbot-xl:
+    image: husarion/rosbot-xl:vulcanexus-humble
+    container_name: rosbot-xl
+    restart: unless-stopped
+    command: ros2 launch rosbot_xl_bringup bringup.launch.py mecanum:=${MECANUM:-True}
+
+  microros:
+    image: husarion/micro-ros-agent:vulcanexus-humble
+    container_name: microros
+    restart: unless-stopped
+    ports:
+      - "8888:8888/udp"
+    command: ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
