@@ -26,11 +26,11 @@ do
 done
 
 # Copy the setup_robot_configuration.sh script to /usr/local/sbin/
-cp ./setup_robot_configuration.sh /usr/local/sbin/
+cp $PWD/setup_robot_configuration.sh /usr/local/sbin/
 
 # Copy all files in the robots directory to /etc/husarion/robot-configs/
 mkdir -p /etc/husarion/robot_configs/
-cp -r ./robots/* /etc/husarion/robot_configs/
+cp -r $PWD/robots/* /etc/husarion/robot_configs/
 
 # Traverse the robot-configs directory and remove all custom_config.sh files
 for file in $(find /etc/husarion/robot_configs/ -name "custom_config.sh")
