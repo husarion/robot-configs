@@ -1,13 +1,13 @@
 services:
 
   rosbot-xl:
-    image: husarion/rosbot-xl:humble
+    image: husarion/rosbot-xl:vulcanexus-humble
     container_name: rosbot-xl
     restart: unless-stopped
     command: ros2 launch rosbot_xl_bringup bringup.launch.py mecanum:=${MECANUM:-True}
 
   microros:
-    image: husarion/micro-ros-agent:humble
+    image: husarion/micro-ros-agent:vulcanexus-humble
     container_name: microros
     restart: unless-stopped
     ports:

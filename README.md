@@ -5,9 +5,9 @@ Basic Husarion robots configs for Husarion OS
 ## Installing
 
 ```bash
-sudo su
-cd /etc
 git clone https://github.com/husarion/robot-configs
+cd robot-configs
+sudo ./install.sh
 ```
 
 ## Using
@@ -19,20 +19,20 @@ sudo su
 # Select a robot model
 # ========================
 
-export ROBOT_MODEL=rosbot-xl
-#export ROBOT_MODEL=rosbot
+export ROBOT_MODEL=rosbot_xl
+#export ROBOT_MODEL=rosbot_2r
 
 # ========================
 # Select a ROS version
 # ========================
 
-export ROS_VERSION=ros2-humble
-# export ROS_VERSION=ros-noetic
-# export ROS_VERSION=vulanexus-humble
+export ROS_VERSION=ros2_humble
+# export ROS_VERSION=ros_noetic
+# export ROS_VERSION=vulcanexus_humble
 
 # ========================
 # Run the configuration
 # ========================
 
-/etc/robot-configs/config.sh $ROBOT_MODEL $ROS_VERSION
+setup_robot_configuration.sh $ROBOT_MODEL $ROS_VERSION
 ```

@@ -2,10 +2,11 @@ services:
   astra:
     image: husarion/astra:vulcanexus-humble
     container_name: astra
+    restart: unless-stopped
     devices:
       - /dev/bus/usb/
     volumes:
-      - ./robot-configs/astra-params.yaml:/ros2_ws/install/astra_camera/share/astra_camera/params/astra_mini_params.yaml
+      - ./astra-params.yaml:/ros2_ws/install/astra_camera/share/astra_camera/params/astra_mini_params.yaml
     command: ros2 launch astra_camera astra_mini.launch.py
 
   rplidar:
@@ -24,7 +25,7 @@ services:
     restart: unless-stopped
     devices:
       - ${SERIAL_PORT:?err}
-    command: serial -D $SERIAL_PORT serial -b 576000 # -v6
+    command: ros2 run micro_ros_agent micro_ros_agent serial -D $SERIAL_PORT serial -b 576000 # -v6
 
   rosbot:
     image: husarion/rosbot:vulcanexus-humble
@@ -35,13 +36,10 @@ services:
   rviz:
     image: husarion/rviz2:vulcanexus-humble
     container_name: rviz
+    restart: unless-stopped
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - ./robot-configs/default.rviz:/root/.rviz2/default.rviz
+      - ./default.rviz:/root/.rviz2/default.rviz
     environment:
       - DISPLAY=${DISPLAY:?err}
       - LIBGL_ALWAYS_SOFTWARE=1
-
-  frame_transformer:
-    image: husarion/rviz2:vulcanexus-humble
-    command: ros2 run tf2_ros static_transform_publisher 0 0 0 0 0 0 base_link laser

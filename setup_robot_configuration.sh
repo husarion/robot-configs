@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Check if running with root privileges
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 
+   exit 1
+fi
+
+# Parse command line arguments
+if [[ $# -ne 2 ]]; then
+    echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
+    exit 1
+fi
+
+robot_model="$1"
+ros_version="$2"
+
+# Check if the robot model is valid
+if [[ "$robot_model" != "rosbot_2r" && "$robot_model" != "rosbot_xl" ]]; then
+    echo "Invalid robot model: $robot_model"
+    exit 1
+fi
+
+# Check if the ROS version is valid
+if [[ "$ros_version" != "ros_noetic" && "$ros_version" != "ros2_humble" && "$ros_version" != "vulcanexus_humble" ]]; then
+    echo "Invalid ROS version: $ros_version"
+    exit 1
+fi
+
+cp -r /etc/husarion/robot_configs/${robot_model}/${ros_version}/* /home/husarion
+dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb
+cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
+bash /usr/lib/husarion/custom_config_${robot_model}.sh
+
+
+# Print success message
+echo "Configuration files copied successfully for robot model $robot_model and ROS version $ros_version"
