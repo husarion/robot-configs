@@ -7,7 +7,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # resize fs
-echo "Resizing file system"
+echo "Resizing the file system"
 root_device=$(df / | awk 'NR==2{sub(/p[0-9]+$/, "", $1); print $1}')
 sudo growpart ${root_device} 2
 sudo resize2fs ${root_device}p2
@@ -39,4 +39,5 @@ cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-netwo
 bash /usr/lib/husarion/custom_config_${robot_model}.sh
 
 # Print success message
+echo ""
 echo "Configuration files copied successfully for robot model \"$robot_model\" and ROS version \"$ros_version\""
