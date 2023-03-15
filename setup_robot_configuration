@@ -8,9 +8,10 @@ fi
 
 # resize fs
 echo "Resizing the file system"
-root_device=$(df / | awk 'NR==2{sub(/p[0-9]+$/, "", $1); print $1}')
-sudo growpart ${root_device} 2
-sudo resize2fs ${root_device}p2
+root_device=$(df / | awk 'NR==2{sub(/[0-9]+$/, "", $1); print $1}')
+partition_number=$(df / | awk 'NR==2{sub(/^.*[^0-9]/, "", $1); print $1}')
+sudo growpart ${root_device} ${partition_number}
+sudo resize2fs ${root_device}${partition_number}
 
 # Parse command line arguments
 if [[ $# -ne 2 ]]; then
