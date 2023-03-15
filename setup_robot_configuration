@@ -19,8 +19,27 @@ if [[ $# -ne 2 ]]; then
     exit 0
 fi
 
+#!/bin/bash
+
 robot_model="$1"
-ros_version="$2"
+
+if [ -z "$2" ]; then
+  if [ "$IMAGE_TYPE" == "VULCANEXUS_HUMBLE" ]; then
+    ros_version="vulcanexus_humble"
+  elif [ "$IMAGE_TYPE" == "ROS2_HUMBLE" ]; then
+    ros_version="ros2_humble"
+  elif [ "$IMAGE_TYPE" == "ROS_NOETIC" ]; then
+    ros_version="ros_noetic"
+  else
+    echo "Error: No ROS version specified"
+    exit 1
+  fi
+else
+  ros_version="$2"
+fi
+
+echo "Robot model: ${robot_model}"
+echo "ROS version: ${ros_version}"
 
 # Check if the robot model is valid
 if [[ "$robot_model" != "rosbot_2r" && "$robot_model" != "rosbot_xl" ]]; then
