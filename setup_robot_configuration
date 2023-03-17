@@ -14,12 +14,10 @@ sudo growpart ${root_device} ${partition_number}
 sudo resize2fs ${root_device}${partition_number}
 
 # Parse command line arguments
-if [[ $# -ne 2 ]]; then
+if [[ $# -lt 1 || $# -gt 2 ]]; then
     echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
     exit 0
 fi
-
-#!/bin/bash
 
 robot_model="$1"
 
