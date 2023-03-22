@@ -8,9 +8,17 @@ fi
 
 # resize fs
 echo "Resizing the file system"
-root_device=$(df / | awk 'NR==2{sub(/[0-9]+$/, "", $1); print $1}')
-partition_number=$(df / | awk 'NR==2{sub(/^.*[^0-9]/, "", $1); print $1}')
-sudo growpart ${root_device} ${partition_number}
+
+root_device=/dev/$(lsblk -no PKNAME,MOUNTPOINT | awk '$2 == "/" {print $1}')
+partition_suffix=$(lsblk -no KNAME,MOUNTPOINT | awk '$2 == "/" {gsub(/.*[^0-9]/, "", $1); print $1}')
+
+if [[ $root_device == /dev/sd* ]]; then
+  partition_number="${partition_suffix}"
+else
+  partition_number="p${partition_suffix}"
+fi
+
+sudo growpart ${root_device} ${partition_suffix}
 sudo resize2fs ${root_device}${partition_number}
 
 # Parse command line arguments
