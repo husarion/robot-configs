@@ -1,6 +1,6 @@
 network:
   version: 2
-  renderer: networkd
+  renderer: NetworkManager
 
   ethernets:
 
@@ -12,9 +12,9 @@ network:
       optional: true
       addresses:
         - 192.168.77.2/24
-  
-  wifis:
 
+  wifis:
+    # ========================================
     # standard Wi-Fi config (client)
     # ========================================
     wlan0:
@@ -25,15 +25,18 @@ network:
         "PLACE_YOUR_WIFI_SSID_HERE":
           password: "PLACE_YOUR_WIFI_PASSWORD_HERE"
 
-    # access point Wi-Fi config
     # ========================================
-    # wlan0: 
-    #   dhcp4: no
-    #   dhcp6: no
+    # access point Wi-Fi config
+    # repace "channel" with the number permitted in your country
+    # https://en.wikipedia.org/wiki/List_of_WLAN_channels
+    # ========================================
+    # wlan0:
+    #   dhcp4: yes
     #   addresses:
-    #     - 192.168.100.1/24
+    #     - 192.168.78.1/24
     #   access-points:
     #     "rosbotap":
-    #       band: 5GHz
+    #       band: "5GHz"
+    #       channel: "149"
     #       mode: "ap"
     #       password: "husarion"
