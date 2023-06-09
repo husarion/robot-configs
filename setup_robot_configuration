@@ -48,7 +48,7 @@ echo "Robot model: ${robot_model}"
 echo "ROS version: ${ros_version}"
 
 # Check if the robot model is valid
-if [[ "$robot_model" != "rosbot_2r" && "$robot_model" != "rosbot_xl" ]]; then
+if [[ "$robot_model" != "rosbot_2r" && "$robot_model" != "rosbot_xl" && "$robot_model" != "panther" ]]; then
     echo "Invalid robot model: $robot_model"
     exit 1
 fi
