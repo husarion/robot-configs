@@ -11,7 +11,7 @@ network:
       dhcp6: yes
       optional: true
       addresses:
-        - 10.15.20.3
+        - 10.15.20.3/24
     
     eno1:
       dhcp4: yes

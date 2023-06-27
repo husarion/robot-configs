@@ -2,6 +2,8 @@ services:
 
   rviz:
     image: husarion/rviz:noetic
+    network_mode: host
+    ipc: host
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ./panther.rviz:/root/.rviz/default.rviz
@@ -10,3 +12,16 @@ services:
       - ROS_MASTER_URI=${ROS_MASTER_URI:-http://10.15.20.2:11311}
       - ROS_IP=${ROS_IP:-10.15.20.3}
       - LIBGL_ALWAYS_SOFTWARE=1
+
+  remote-desktop:
+    image: donowak/remote-desktop:lan
+    container_name: vnc-remote-desktop
+    restart: on-failure
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    ipc: host
+    ports:
+      - 8080:8080
+    environment:
+      - VNC_PASSWORD=husarion
+      - DISPLAY
