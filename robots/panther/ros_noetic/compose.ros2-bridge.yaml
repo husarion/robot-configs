@@ -1,0 +1,13 @@
+services:
+  
+  bridge:
+    image: husarion/ros:galactic-ros1-bridge
+    container_name: ros-bridge
+    restart: always
+    network_mode: host
+    ipc: host
+    environment:
+      - ROS_IP=10.15.20.3
+      - ROS_MASTER_URI=http://10.15.20.2:11311
+      - RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
+    command: ros2 run ros1_bridge dynamic_bridge

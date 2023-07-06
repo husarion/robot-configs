@@ -1,0 +1,38 @@
+services:
+
+  vnc-client:
+    image: husarion/webvnc-client
+    ports:
+      - ${HUSARNET_IPV6}:8080:8080
+
+  websockify:
+    image: husarion/websockify
+    ports:
+      - ${HUSARNET_IPV6}:5902:5902
+    environment:
+      - VNC_SERVER_HOST=vnc-server
+      - VNC_SERVER_PORT=5901
+      - WEBSOCKIFY_PORT=5902
+
+  vnc-server:
+    image: husarion/webvnc-server
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    ipc: host
+    environment:
+      - DISPLAY
+      - PASSWORD=abcd123
+      - VNC_SERVER_PORT=5901
+
+  rviz:
+    image: husarion/rviz:noetic
+    network_mode: host
+    ipc: host
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ./panther.rviz:/root/.rviz/default.rviz
+    environment: 
+      - DISPLAY=${DISPLAY:?You need to define display env}
+      - ROS_MASTER_URI=${ROS_MASTER_URI:-http://10.15.20.2:11311}
+      - ROS_IP=${ROS_IP:-10.15.20.3}
+      - LIBGL_ALWAYS_SOFTWARE=1
