@@ -12,4 +12,3 @@ cp ${CONFIG_FILES_PATH}/files/hwclock-set /lib/udev/hwclock-set
 # Setup envs
 echo "ROS_IP=10.15.20.3" >> /etc/environment
 echo "ROS_MASTER_URI=http://10.15.20.2:11311" >> /etc/environment
-echo "SBC_NAME_FANCY='Intel NUC'" >> /etc/environment
