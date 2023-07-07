@@ -41,7 +41,22 @@ fi
 echo -e "${GREEN}[2/2]\tLaunching ROS 2 Driver${NC}"
 
 docker compose -f $COMPOSE_FILE up -d
-sleep 3
+sleep 5
+
+# This is a temporary solution allowing shared memory communication between 
+# host and docker container. To be removed when user will be able to change this permission
+# to something else than 0644 (https://github.com/eProsima/Fast-DDS/blob/master/thirdparty/boost/include/boost/interprocess/permissions.hpp#L100) 
+# You need to start containers first, after that new files in /dev/shm/ are created. We need to change their permissions to 0666
+#!/bin/bash
+count=0
+while [ $count -lt 10 ]
+do
+    sudo chmod a+w /dev/shm/*
+    sleep 5
+    ((count++))
+done &
+# TODO: when done it separate terminal it works, but here doesn't
+
 ros2 daemon stop
 
 echo -e "\t${GREEN}done. Type ${BOLD}ros2 topic list${NC}${GREEN} to see available ROS 2 topics ${NC}"
