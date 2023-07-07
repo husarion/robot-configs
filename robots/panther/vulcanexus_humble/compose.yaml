@@ -1,0 +1,17 @@
+services:
+  
+  # Please be aware that at the present time, Panther does 
+  # not natively utilize the ROS 2 driver within its internal 
+  # computer. As a result, ROS 2 support is somewhat limited 
+  # and necessitates the use of a ROS 2 bridge.
+  bridge:
+    image: husarion/ros:galactic-ros1-bridge
+    container_name: ros-bridge
+    restart: always
+    network_mode: host
+    ipc: host
+    environment:
+      - ROS_IP=10.15.20.3
+      - ROS_MASTER_URI=http://10.15.20.2:11311
+      - RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}
+    command: ros2 run ros1_bridge dynamic_bridge
