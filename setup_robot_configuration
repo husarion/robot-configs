@@ -59,7 +59,7 @@ if [[ "$ros_version" != "ros_noetic" && "$ros_version" != "ros2_humble" && "$ros
     exit 1
 fi
 
-cp -r /etc/husarion/robot_configs/${robot_model}/${ros_version}/* /home/husarion
+cp -rp /etc/husarion/robot_configs/${robot_model}/${ros_version}/* /home/husarion
 dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb
 cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
 bash /usr/lib/husarion/custom_config_${robot_model}.sh
