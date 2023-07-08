@@ -1,15 +1,42 @@
 services:
 
+# export DOCKER_UID=$(id -u husarion)
+# export DOCKER_GID=$(id -g husarion)
+
   rosbot-xl:
     image: husarion/rosbot-xl:humble
     container_name: rosbot-xl
     restart: unless-stopped
+    network_mode: host
+    ipc: host
+    user: $DOCKER_UID:$DOCKER_GID
+    volumes:
+      - /etc/group:/etc/group:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/shadow:/etc/shadow:ro
+      - ./ros:/home/husarion/.ros
+    environment:
+      - RMW_IMPLEMENTATION
+      - FASTRTPS_DEFAULT_PROFILES_FILE
+      - CYCLONEDDS_URI
     command: ros2 launch rosbot_xl_bringup bringup.launch.py mecanum:=${MECANUM:-True}
 
   microros:
     image: husarion/micro-ros-agent:humble
     container_name: microros
     restart: unless-stopped
-    ports:
-      - "8888:8888/udp"
+    # ports:
+    #   - "8888:8888/udp"
+    network_mode: host
+    ipc: host
+    user: $DOCKER_UID:$DOCKER_GID
+    volumes:
+      - /etc/group:/etc/group:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/shadow:/etc/shadow:ro
+      - ./ros:/home/husarion/.ros
+    environment:
+      - RMW_IMPLEMENTATION
+      - FASTRTPS_DEFAULT_PROFILES_FILE
+      - CYCLONEDDS_URI
     command: ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
