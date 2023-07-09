@@ -9,10 +9,12 @@ x-common-config:
     - /etc/passwd:/etc/passwd:ro
     - /etc/shadow:/etc/shadow:ro
     - /home/husarion/.ros:/home/husarion/.ros
+    # TODO: add volume mapping for FASTRTPS_DEFAULT_PROFILES_FILE and CYCLONEDDS_URI
   environment:
     - RMW_IMPLEMENTATION
     - FASTRTPS_DEFAULT_PROFILES_FILE
     - CYCLONEDDS_URI
+    - ROS_LOCALHOST_ONLY
 
 services:
 
