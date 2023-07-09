@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Get the current user
+CURRENT_USER=$(whoami)
+
+# Check if the current user is "husarion"
+if [ "$CURRENT_USER" != "husarion" ]; then
+  echo "This script can only be run by the user 'husarion'."
+  exit 1
+fi
+
 # Define color codes
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -40,22 +49,16 @@ fi
 # Stop the Docker containers if they're running
 echo -e "${GREEN}[2/2]\tLaunching ROS 2 Driver${NC}"
 
-docker compose -f $COMPOSE_FILE up -d
-sleep 5
-
 # This is a temporary solution allowing shared memory communication between 
 # host and docker container. To be removed when user will be able to change this permission
 # to something else than 0644 (https://github.com/eProsima/Fast-DDS/blob/master/thirdparty/boost/include/boost/interprocess/permissions.hpp#L100) 
 # You need to start containers first, after that new files in /dev/shm/ are created. We need to change their permissions to 0666
-#!/bin/bash
-count=0
-while [ $count -lt 10 ]
-do
-    sudo chmod a+w /dev/shm/*
-    sleep 5
-    ((count++))
-done &
-# TODO: when done it separate terminal it works, but here doesn't
+export DOCKER_UID=$(id -u husarion)
+export DOCKER_GID=$(id -g husarion)
+mkdir -p ~/.ros
+docker compose -f $COMPOSE_FILE up -d
+
+sleep 3
 
 ros2 daemon stop
 

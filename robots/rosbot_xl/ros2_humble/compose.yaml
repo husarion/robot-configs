@@ -3,6 +3,12 @@ x-common-config:
   restart: unless-stopped
   network_mode: host
   ipc: host
+  user: $DOCKER_UID:$DOCKER_GID
+  volumes:
+    - /etc/group:/etc/group:ro
+    - /etc/passwd:/etc/passwd:ro
+    - /etc/shadow:/etc/shadow:ro
+    - /home/husarion/.ros:/home/husarion/.ros
   environment:
     - RMW_IMPLEMENTATION
     - FASTRTPS_DEFAULT_PROFILES_FILE

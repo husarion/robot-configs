@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Get the current user
+CURRENT_USER=$(whoami)
+
+# Check if the current user is "husarion"
+if [ "$CURRENT_USER" != "husarion" ]; then
+  echo "This script can only be run by the user 'husarion'."
+  exit 1
+fi
+
 # Define color codes
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
