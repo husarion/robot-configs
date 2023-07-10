@@ -22,12 +22,10 @@ sudo growpart ${root_device} ${partition_suffix}
 sudo resize2fs ${root_device}${partition_number}
 
 # Parse command line arguments
-if [[ $# -lt 1 || $# -gt 2 ]]; then
+if [[ $# -gt 2 ]]; then
     echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
     exit 0
 fi
-
-robot_model="$1"
 
 if [ -z "$2" ]; then
   if [ "$IMAGE_TYPE" == "VULCANEXUS_HUMBLE" ]; then
@@ -41,23 +39,32 @@ if [ -z "$2" ]; then
     exit 1
   fi
 else
-  ros_version="$2"
+  if [ "$2" == "vulcanexus_humble" ] || [ "$2" == "ros2_humble" ] || [ "$2" == "ros_noetic" ]; then
+    ros_version="$2"
+  else
+    echo "Error: Invalid ROS version specified: $2"
+    echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
+    exit 1
+  fi
+fi
+
+echo "ROS version: ${ros_version}"
+
+if [ -z "$1" ]; then
+  echo ""
+  echo "Using default configuration"
+  exit 0
+else
+  if [ "$1" == "rosbot_xl" ] || [ "$1" == "rosbot_2r" ] || [ "$1" == "panther" ]; then
+    robot_model="$1"
+  else
+    echo "Error: Invalid robot model: $1"
+    echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
+    exit 1
+  fi
 fi
 
 echo "Robot model: ${robot_model}"
-echo "ROS version: ${ros_version}"
-
-# Check if the robot model is valid
-if [[ "$robot_model" != "rosbot_2r" && "$robot_model" != "rosbot_xl" && "$robot_model" != "panther" ]]; then
-    echo "Invalid robot model: $robot_model"
-    exit 1
-fi
-
-# Check if the ROS version is valid
-if [[ "$ros_version" != "ros_noetic" && "$ros_version" != "ros2_humble" && "$ros_version" != "vulcanexus_humble" ]]; then
-    echo "Invalid ROS version: $ros_version"
-    exit 1
-fi
 
 cp -rp /etc/husarion/robot_configs/${robot_model}/${ros_version}/* /home/husarion
 dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb

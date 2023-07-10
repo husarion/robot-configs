@@ -14,6 +14,7 @@ DOCKER_IMAGE="husarion/rosbot-xl:humble"
 
 # Define color codes
 GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
 RED='\033[0;31m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
@@ -22,7 +23,7 @@ echo -e "${GREEN}[1/4]\r\nInitiating firmware flash on the ROSbot XL Digital Boa
 
 # Check if the Docker image exists
 if ! docker image inspect $DOCKER_IMAGE >/dev/null 2>&1; then
-  echo -e "${GREEN}${BOLD}$DOCKER_IMAGE${NC}${GREEN} not found. Pulling...${NC}"
+  echo -e "${YELLOW}${BOLD}$DOCKER_IMAGE${NC}${YELLOW} not found. Pulling...${NC}"
   docker pull $DOCKER_IMAGE
 fi
 echo -e "${GREEN}done${NC}"

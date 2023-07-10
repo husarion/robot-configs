@@ -3,7 +3,7 @@ x-common-config:
   restart: unless-stopped
   network_mode: host
   ipc: host
-  user: $DOCKER_UID:$DOCKER_GID
+  user: ${DOCKER_UID:-1000}:${DOCKER_GID:-1000}
   volumes:
     - /etc/group:/etc/group:ro
     - /etc/passwd:/etc/passwd:ro
