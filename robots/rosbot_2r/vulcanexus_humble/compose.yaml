@@ -19,8 +19,8 @@ x-common-config:
     - /etc/passwd:/etc/passwd:ro                # *
     - /etc/shadow:/etc/shadow:ro                # *
     - /home/husarion/.ros:/home/husarion/.ros   # *
-    - ${FASTRTPS_DEFAULT_PROFILES_FILE:-dummy_volume_fastdds}:${FASTRTPS_DEFAULT_PROFILES_FILE:-/dummy_volume_fastdds}  # **
-    - ${CYCLONEDDS_PATH:-dummy_volume_cyclonedds}:${CYCLONEDDS_PATH:-/dummy_volume_cyclonedds}                          # **
+    - ${FASTRTPS_DEFAULT_PROFILES_FILE:-dummy_volume_fastdds}:${FASTRTPS_DEFAULT_PROFILES_FILE:-/dummy_volume_fastdds}:ro  # **
+    - ${CYCLONEDDS_PATH:-dummy_volume_cyclonedds}:${CYCLONEDDS_PATH:-/dummy_volume_cyclonedds}:ro                          # **
   environment:
     - RMW_IMPLEMENTATION              # ***
     - FASTRTPS_DEFAULT_PROFILES_FILE  # ***
