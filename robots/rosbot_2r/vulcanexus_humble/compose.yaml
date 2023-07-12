@@ -25,7 +25,7 @@ x-common-config:
     - RMW_IMPLEMENTATION              # ***
     - FASTRTPS_DEFAULT_PROFILES_FILE  # ***
     - CYCLONEDDS_URI                  # ***
-    - ROS_LOCALHOST_ONLY              # ***
+    - ROS_DOMAIN_ID                   # ***
 
 services:
   astra:
@@ -46,13 +46,16 @@ services:
         ros2 launch sllidar_ros2 sllidar_launch.py
         serial_baudrate:=${RPLIDAR_BAUDRATE:-256000}
 
-  microros:
-    image: husarion/micro-ros-agent:humble
-    container_name: microros
+  micro-xrce-agent:
+    image: husarion/micro-xrce-agent:v2.4.1
+    container_name: micro-xrce-agent
     <<: *common-config
     devices:
       - ${SERIAL_PORT:?err}
-    command: ros2 run micro_ros_agent micro_ros_agent serial -D $SERIAL_PORT serial -b 576000 # -v6
+    environment: #only two envs are valid for micro-xrce-agent
+      - FASTRTPS_DEFAULT_PROFILES_FILE            # ***
+      - XRCE_DOMAIN_ID_OVERRIDE=${ROS_DOMAIN_ID}  # ***
+    command: MicroXRCEAgent serial -D $SERIAL_PORT serial -b 576000 # -v6
 
   rosbot:
     image: husarion/rosbot:humble

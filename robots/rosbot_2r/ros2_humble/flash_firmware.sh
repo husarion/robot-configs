@@ -29,19 +29,9 @@ fi
 echo -e "${GREEN}done${NC}"
 
 # Stop the Docker containers if they're running
-echo -e "\r\n${GREEN}[2/3]\r\nStop ${BOLD}rosbot${NC}${GREEN} and ${BOLD}microros${NC}${GREEN} Docker containers if they're running ${NC}"
+echo -e "\r\n${GREEN}[2/3]\r\nStop ${BOLD}rosbot${NC}${GREEN} Docker containers if it is running ${NC}"
 
-# Define the Docker containers
-CONTAINERS=("rosbot" "microros")
-
-# Loop through each container and stop it if it exists and is running
-for CONTAINER in "${CONTAINERS[@]}"; do
-    CONTAINER_ID=$(docker ps -q -f name=$CONTAINER)
-    if [ ! -z "$CONTAINER_ID" ]; then
-        echo "Stopping container $CONTAINER..."
-        docker stop $CONTAINER
-    fi
-done
+docker stop rosbot
 
 # Flashing
 

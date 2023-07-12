@@ -25,7 +25,7 @@ x-common-config:
     - RMW_IMPLEMENTATION              # ***
     - FASTRTPS_DEFAULT_PROFILES_FILE  # ***
     - CYCLONEDDS_URI                  # ***
-    - ROS_LOCALHOST_ONLY              # ***
+    - ROS_DOMAIN_ID                   # ***
 
 services:
 
@@ -35,13 +35,14 @@ services:
     <<: *common-config
     command: ros2 launch rosbot_xl_bringup bringup.launch.py mecanum:=${MECANUM:-True}
 
-  microros:
-    image: husarion/micro-ros-agent:humble
-    container_name: microros
+  micro-xrce-agent:
+    image: husarion/micro-xrce-agent:v2.4.1
+    container_name: micro-xrce-agent
     <<: *common-config
-    # ports:
-    #   - "8888:8888/udp"
-    command: ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
+    environment: #only two envs are valid for micro-xrce-agent
+      - FASTRTPS_DEFAULT_PROFILES_FILE            # ***
+      - XRCE_DOMAIN_ID_OVERRIDE=${ROS_DOMAIN_ID}  # ***
+    command: MicroXRCEAgent udp4 --port 8888
 
 volumes:
   dummy_volume_fastdds:
