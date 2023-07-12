@@ -29,9 +29,19 @@ fi
 echo -e "${GREEN}done${NC}"
 
 # Stop the Docker containers if they're running
-echo -e "\r\n${GREEN}[2/4]\r\nStop ${BOLD}rosbot-xl${NC}${GREEN} Docker container if it is running ${NC}"
+echo -e "\r\n${GREEN}[2/4]\r\nStop ${BOLD}rosbot-xl${NC}${GREEN} and ${BOLD}micro-xrce-agent${NC}${GREEN} Docker containers if they're running ${NC}"
 
-docker stop rosbot-xl
+# Define the Docker containers
+CONTAINERS=("rosbot-xl" "micro-xrce-agent")
+
+# Loop through each container and stop it if it exists and is running
+for CONTAINER in "${CONTAINERS[@]}"; do
+    CONTAINER_ID=$(docker ps -q -f name=$CONTAINER)
+    if [ ! -z "$CONTAINER_ID" ]; then
+        echo "Stopping container $CONTAINER..."
+        docker stop $CONTAINER
+    fi
+done
 
 # Checking if /dev/ttyUSBDB exists
 DEVICE="/dev/ttyUSBDB"
