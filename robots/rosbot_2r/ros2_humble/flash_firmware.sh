@@ -10,7 +10,7 @@ if [ "$CURRENT_USER" != "husarion" ]; then
 fi
 
 # Define the Docker image
-DOCKER_IMAGE="husarion/rosbot:humble"
+DOCKER_IMAGE="husarion/rosbot:humble-0.6.1-20230712"
 
 # Define color codes
 GREEN='\033[0;32m'

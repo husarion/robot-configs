@@ -30,7 +30,7 @@ x-common-config:
 services:
 
   rosbot-xl:
-    image: husarion/rosbot-xl:humble
+    image: husarion/rosbot-xl:humble-0.8.2-20230712
     container_name: rosbot-xl
     <<: *common-config
     command: ros2 launch rosbot_xl_bringup bringup.launch.py mecanum:=${MECANUM:-True}
