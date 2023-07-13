@@ -10,7 +10,7 @@ if [ "$CURRENT_USER" != "husarion" ]; then
 fi
 
 # Define the Docker image
-DOCKER_IMAGE="husarion/rosbot:humble"
+DOCKER_IMAGE="husarion/rosbot:humble-0.6.1-20230712"
 
 # Define color codes
 GREEN='\033[0;32m'
@@ -29,10 +29,10 @@ fi
 echo -e "${GREEN}done${NC}"
 
 # Stop the Docker containers if they're running
-echo -e "\r\n${GREEN}[2/3]\r\nStop ${BOLD}rosbot${NC}${GREEN} and ${BOLD}micro-xrce-agent${NC}${GREEN} Docker containers if they're running ${NC}"
+echo -e "\r\n${GREEN}[2/3]\r\nStop ${BOLD}rosbot${NC}${GREEN} and ${BOLD}microros${NC}${GREEN} Docker containers if they're running ${NC}"
 
 # Define the Docker containers
-CONTAINERS=("rosbot" "micro-xrce-agent")
+CONTAINERS=("rosbot" "microros")
 
 # Loop through each container and stop it if it exists and is running
 for CONTAINER in "${CONTAINERS[@]}"; do
