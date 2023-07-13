@@ -46,15 +46,15 @@ services:
         ros2 launch sllidar_ros2 sllidar_launch.py
         serial_baudrate:=${RPLIDAR_BAUDRATE:-256000}
 
-  micro-xrce-agent:
+  microros:
     image: husarion/micro-xrce-agent:v2.4.1
-    container_name: micro-xrce-agent
+    container_name: microros
     <<: *common-config
     devices:
       - ${SERIAL_PORT:?err}
     environment: #only two envs are valid for micro-xrce-agent
       - FASTRTPS_DEFAULT_PROFILES_FILE            # ***
-      - XRCE_DOMAIN_ID_OVERRIDE=${ROS_DOMAIN_ID}  # ***
+      - XRCE_DOMAIN_ID_OVERRIDE=${ROS_DOMAIN_ID:-}  # ***
     command: MicroXRCEAgent serial -D $SERIAL_PORT serial -b 576000 # -v6
 
   rosbot:

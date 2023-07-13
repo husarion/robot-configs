@@ -35,13 +35,13 @@ services:
     <<: *common-config
     command: ros2 launch rosbot_xl_bringup bringup.launch.py mecanum:=${MECANUM:-True}
 
-  micro-xrce-agent:
+  microros:
     image: husarion/micro-xrce-agent:v2.4.1
-    container_name: micro-xrce-agent
+    container_name: microros
     <<: *common-config
     environment: #only two envs are valid for micro-xrce-agent
       - FASTRTPS_DEFAULT_PROFILES_FILE            # ***
-      - XRCE_DOMAIN_ID_OVERRIDE=${ROS_DOMAIN_ID}  # ***
+      - XRCE_DOMAIN_ID_OVERRIDE=${ROS_DOMAIN_ID:-}  # ***
     command: MicroXRCEAgent udp4 --port 8888
 
 volumes:
