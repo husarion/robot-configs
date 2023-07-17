@@ -1,71 +1,44 @@
+x-common-config:
+  &common-config
+  restart: unless-stopped
+  network_mode: host
+  tty: true
+  environment:
+    - ROS_MASTER_URI=${ROS_MASTER_URI:-http://127.0.0.1:11311}
+    - ROS_IP=${ROS_IP:-127.0.0.1}
+
 services:
 
   ros-master:
     image: ros:noetic-ros-core
     container_name: ros-master
-    restart: unless-stopped
-    network_mode: host
-    tty: true
-    environment:
-      - ROS_IP=${ROS_IP:-127.0.0.1}
+    <<: *common-config
     command: roscore
 
   rosbot:
     image: husarion/rosbot:noetic
     container_name: rosbot
-    restart: unless-stopped
-    network_mode: host
-    tty: true
+    <<: *common-config
     devices:
-      - ${SERIAL_PORT}
-    environment:
-      - SERIAL_PORT=${SERIAL_PORT:?You need to define SERIAL_PORT env}
-      - ROS_MASTER_URI=${ROS_MASTER_URI:-http://127.0.0.1:11311}
-      - ROS_IP=${ROS_IP:-127.0.0.1}
+      - ${SERIAL_PORT:?err}
+    env_file:
+      - serial.env
     command: roslaunch --wait rosbot_bringup rosbot_docker.launch
 
   rplidar:
     image: husarion/rplidar:noetic
     container_name: rplidar
-    restart: unless-stopped
-    network_mode: host
+    <<: *common-config
     devices:
-      - /dev/ttyUSB0
-    environment:
-      - ROS_MASTER_URI=${ROS_MASTER_URI:-http://127.0.0.1:11311}
-      - ROS_IP=${ROS_IP:-127.0.0.1}
+      - /dev/ttyRPLIDAR:/dev/ttyUSB0
     command: roslaunch --wait rplidar_ros rplidar_a3.launch
+    # command: roslaunch --wait rplidar_ros rplidar.launch # for LIDARs in older ROSbots (A2M8 with red circle around the sensors)
 
   astra:
     image: husarion/astra:noetic
     container_name: astra
-    restart: unless-stopped
-    network_mode: host
+    <<: *common-config
     devices:
       - /dev/bus/usb
-    environment:
-      - ROS_MASTER_URI=${ROS_MASTER_URI:-http://127.0.0.1:11311}
-      - ROS_IP=${ROS_IP:-127.0.0.1}
     command: roslaunch --wait astra_camera astra.launch
 
-  rviz:
-    image: husarion/rviz:noetic
-    container_name: rviz
-    network_mode: host
-    volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - ./default.rviz:/root/.rviz/default.rviz
-    environment: 
-      - DISPLAY=${DISPLAY:-:0}
-      - ROS_MASTER_URI=${ROS_MASTER_URI:-http://127.0.0.1:11311}
-      - ROS_IP=${ROS_IP:-127.0.0.1}
-      # - LIBGL_ALWAYS_SOFTWARE=1
-
-  frame-transformer:
-    image: husarion/rviz:noetic
-    container_name: frame-transformer
-    network_mode: host
-    environment: 
-      - ROS_MASTER_URI=${ROS_MASTER_URI:-http://127.0.0.1:11311}
-      - ROS_IP=${ROS_IP:-127.0.0.1}
-    command: rosrun tf static_transform_publisher 0 0 0 0 0 0 laser camera_link 0
