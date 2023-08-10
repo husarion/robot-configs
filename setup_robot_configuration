@@ -32,6 +32,8 @@ if [ -z "$2" ]; then
     ros_version="vulcanexus_humble"
   elif [ "$IMAGE_TYPE" == "ROS2_HUMBLE" ]; then
     ros_version="ros2_humble"
+  elif [ "$IMAGE_TYPE" == "ROS2_FOXY" ]; then
+    ros_version="ros2_humble"
   elif [ "$IMAGE_TYPE" == "ROS_NOETIC" ]; then
     ros_version="ros_noetic"
   else
