@@ -73,6 +73,9 @@ dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb
 cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
 bash /usr/lib/husarion/custom_config_${robot_model}.sh
 
+mkdir /home/husarion/.ros
+chown husarion:husarion /home/husarion/.ros
+
 # Generating new SSH credentials
 ssh-keygen -A
 systemctl restart sshd
