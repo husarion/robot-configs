@@ -57,7 +57,7 @@ if [ -z "$1" ]; then
   echo "Using default configuration"
   exit 0
 else
-  if [ "$1" == "rosbot_xl" ] || [ "$1" == "rosbot_2r" ] || [ "$1" == "panther" ]; then
+  if [ "$1" == "rosbot_xl" ] || [ "$1" == "rosbot_2r" ] || [ "$1" == "rosbot_2_pro" ] || [ "$1" == "panther" ]; then
     robot_model="$1"
   else
     echo "Error: Invalid robot model: $1"
@@ -72,6 +72,10 @@ cp -rp /etc/husarion/robot_configs/${robot_model}/${ros_version}/* /home/husario
 dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb
 cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
 bash /usr/lib/husarion/custom_config_${robot_model}.sh
+
+# Generating new SSH credentials
+ssh-keygen -A
+systemctl restart sshd
 
 # Print success message
 echo ""
