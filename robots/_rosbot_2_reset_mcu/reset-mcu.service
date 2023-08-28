@@ -1,0 +1,10 @@
+[Unit]
+Description=Reset MCU in ROSbot 2R / 2 PRO on startup
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/reset-mcu.py
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target
