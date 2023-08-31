@@ -4,8 +4,8 @@
 
 echo "enable reset MCU service"
 
-cp ../_rosbot_2_reset_mcu/reset-mcu.py /usr/local/sbin/reset-mcu.py
-cp ../_rosbot_2_reset_mcu/reset-mcu.service /etc/systemd/system/reset-mcu.service
+cp /etc/husarion/robot_configs/_rosbot_2_reset_mcu/reset-mcu.py /usr/local/sbin/reset-mcu.py
+cp /etc/husarion/robot_configs/_rosbot_2_reset_mcu/reset-mcu.service /etc/systemd/system/reset-mcu.service
 
 systemctl enable reset-mcu.service
 systemctl start reset-mcu.service
