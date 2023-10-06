@@ -10,7 +10,7 @@ if [ "$CURRENT_USER" != "husarion" ]; then
 fi
 
 # Define the Docker image
-DOCKER_IMAGE="husarion/rosbot:humble-0.6.1-20230712"
+DOCKER_IMAGE=$(yq .services.rosbot.image /home/husarion/compose.yaml)
 
 # Define color codes
 GREEN='\033[0;32m'
