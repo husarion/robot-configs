@@ -19,8 +19,11 @@ NC='\033[0m' # No Color
 # Stop the Docker containers if they're running
 echo -e "${GREEN}[1/1]\r\nStopping ROS 2 driver ${NC}"
 
+# Get the directory of the current script
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 # Define the docker-compose file
-COMPOSE_FILE="/home/husarion/compose.yaml"
+COMPOSE_FILE="$SCRIPT_DIR/compose.yaml"
 
 # This is a temporary solution allowing shared memory communication between 
 # host and docker container. To be removed when user will be able to change this permission

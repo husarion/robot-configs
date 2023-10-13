@@ -19,8 +19,11 @@ NC='\033[0m' # No Color
 # Stop the Docker containers if they're running
 echo -e "${GREEN}[1/2]\r\nChecking if the required Docker Images are pulled ...${NC}"
 
+# Get the directory of the current script
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 # Define the docker-compose file
-COMPOSE_FILE="/home/husarion/compose.yaml"
+COMPOSE_FILE="$SCRIPT_DIR/compose.yaml"
 
 # This is a temporary solution allowing shared memory communication between 
 # host and docker container. To be removed when user will be able to change this permission
@@ -65,11 +68,21 @@ fi
 
 mkdir -p ~/.ros
 
-if [[ $1 == "all" ]]; then
-    docker compose -f $COMPOSE_FILE up -d
-else
-    docker compose -f $COMPOSE_FILE up -d rosbot microros
-fi
+case "$1" in
+    "lidar")
+        docker compose -f $COMPOSE_FILE up -d rplidar
+        ;;
+    "camera")
+        docker compose -f $COMPOSE_FILE up -d astra
+        ;;
+    "foxglove")
+        docker compose -f $COMPOSE_FILE up -d image_compressor ws-bridge foxglove
+        ;;
+    *)
+        docker compose -f $COMPOSE_FILE up -d rosbot microros
+        ;;
+esac
+
 
 sleep 3
 
