@@ -40,7 +40,11 @@ services:
     devices:
       - /dev/bus/usb/
     command: ros2 launch astra_camera astra_mini.launch.py
-
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          
   rplidar:
     image: husarion/rplidar:humble
     container_name: rplidar
