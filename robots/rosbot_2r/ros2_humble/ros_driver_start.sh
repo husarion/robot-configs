@@ -76,7 +76,7 @@ case "$1" in
         docker compose -f $COMPOSE_FILE up -d astra
         ;;
     "foxglove")
-        docker compose -f $COMPOSE_FILE up -d image_compressor ws-bridge foxglove
+        docker compose -f $COMPOSE_FILE up -d foxglove-datasource foxglove
         ;;
     *)
         docker compose -f $COMPOSE_FILE up -d rosbot microros

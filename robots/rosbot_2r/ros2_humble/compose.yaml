@@ -8,9 +8,12 @@
 #
 # *** Optional envs the ROS user may want to set - we need to pass them to the container
 
-x-common-config:
-  &common-config
+x-restart-policy:
+  &restart-policy
   restart: unless-stopped
+
+x-ros-config:
+  &ros-config
   network_mode: host
   ipc: host
   pid: host
@@ -33,82 +36,58 @@ services:
 
   # ============ basic services ============
 
-  astra:
-    image: husarion/astra:humble
-    container_name: astra
-    <<: *common-config
+  rosbot:
+    image: husarion/rosbot:humble
+    <<: [*restart-policy, *ros-config]
+    command: ros2 launch rosbot_bringup bringup.launch.py
+
+  microros:
+    image: husarion/micro-ros-agent:humble
+    <<: [*restart-policy, *ros-config]
     devices:
-      - /dev/bus/usb/
-    command: ros2 launch astra_camera astra_mini.launch.py
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          
+      - ${SERIAL_PORT:?err}
+    command: ros2 run micro_ros_agent micro_ros_agent serial -D $SERIAL_PORT serial -b 576000 # -v6
+
   rplidar:
     image: husarion/rplidar:humble
-    container_name: rplidar
-    <<: *common-config
+    <<: [*restart-policy, *ros-config]
     devices:
       - /dev/ttyRPLIDAR:/dev/ttyUSB0
     command: >
         ros2 launch sllidar_ros2 sllidar_launch.py
         serial_baudrate:=${RPLIDAR_BAUDRATE:-256000}
 
-  microros:
-    image: husarion/micro-ros-agent:humble-3.1.3-20231013
-    container_name: microros
-    <<: *common-config
+  astra:
+    image: husarion/astra:humble
+    <<: [*restart-policy, *ros-config]
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
     devices:
-      - ${SERIAL_PORT:?err}
-    command: ros2 run micro_ros_agent micro_ros_agent serial -D $SERIAL_PORT serial -b 576000 # -v6
-
-  rosbot:
-    image: husarion/rosbot:humble-0.8.4-20230921
-    container_name: rosbot
-    <<: *common-config
-    command: ros2 launch rosbot_bringup bringup.launch.py
-
+      - /dev/bus/usb/
+    command: ros2 launch astra_camera astra_mini.launch.py
+ 
   # ============ web ui services ============
 
-  image_compressor:
-    image: husarion/image-transport:humble-4.2.0-20230216
-    container_name: image_compressor
-    <<: *common-config
-    command: >
-      ros2 run image_transport republish raw compressed
-        --ros-args
-        --remap in:=/camera/color/image_raw
-        --remap out/compressed:=/camera/color/image_raw/compressed
-
-  # ws-bridge:
-  #   image: husarion/rosbridge-server:humble-1.3.1-20230831
-  #   container_name: ws-bridge
-  #   <<: *common-config
-  #   command: ros2 launch rosbridge_server rosbridge_websocket_launch.xml
-
-  ws-bridge:
-    image: husarion/foxglove-bridge:humble-0.7.2-20231015
-    container_name: ws-bridge
-    network_mode: bridge # for a strange reason network_mode: host doesn't work in this service with IPv6
-    <<: *common-config
-    ports:
-      - 8765:8765
-    # command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765 address:="fc94:52c1:8ca0:4a31:abcd:2f7c:8c49:e2f4"
-    # command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765 service_whitelist:=["nonexistent_pattern_12345"]
-    command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765 capabilities:=[clientPublish,parameters,parametersSubscribe,connectionGraph,assets]
+  foxglove-datasource:
+    image: husarion/rosbridge-server:humble
+    <<: [*restart-policy, *ros-config]
+    command: ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 
   foxglove:
-    image: husarion/foxglove:1.72.0
+    image: husarion/foxglove:fix-cache-1.72.0
+    <<: *restart-policy
     ports:
       - 8080:8080
     volumes:
       - ./foxglove_layout.json:/foxglove/default-layout.json
     environment:
-      # - DS_TYPE=rosbridge-websocket
-      - DS_TYPE=foxglove-websocket
-      - DS_PORT=8765
+      - DS_TYPE=rosbridge-websocket
+      - DS_PORT=9090
       - UI_PORT=8080
+      - DISABLE_CACHE=true
+      - DISABLE_INTERACTION=false
 
 volumes:
   dummy_volume_fastdds:
