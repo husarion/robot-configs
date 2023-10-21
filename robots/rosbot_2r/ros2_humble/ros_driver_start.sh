@@ -58,6 +58,7 @@ fi
 
 # Stop the Docker containers if they're running
 echo -e "\r\n${GREEN}[2/2]\r\nLaunching ROS 2 Driver${NC}"
+echo -e "ROS_LOCALHOST_ONLY=$ROS_LOCALHOST_ONLY"
 
 prefix="file://"
 if [[ $CYCLONEDDS_URI == "$prefix"* ]]; then

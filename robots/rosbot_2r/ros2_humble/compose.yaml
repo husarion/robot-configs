@@ -89,6 +89,31 @@ services:
       - DISABLE_CACHE=true
       - DISABLE_INTERACTION=false
 
+  # ============ ROS 2 Router ============
+
+  # quick start:
+  # export ROS_LOCALHOST_ONLY=1 # without this WHITELIST_INTERFACES="127.0.0.1" doesn't work
+  # ./ros_driver_start.sh
+  # docker compose up ros2router
+
+  ros2router:
+    image: husarnet/ros2router:1.0.0
+    <<: *restart-policy
+    network_mode: host
+    # volumes:
+    #   - ./filter.yaml:/filter.yaml
+    environment:
+      - WHITELIST_INTERFACES="127.0.0.1" # if setting this param, you need to set "ROS_LOCALHOST_ONLY=1" on this host
+      - LISTENING_PORT=11888
+      - ID=0
+      - ROS_DOMAIN_ID
+
+# on the laptop run:
+# docker run --restart always --network host -e ROS_DISCOVERY_SERVER="rosbot2r:11888" -e ID=2 husarnet/ros2router:1.0.0
+# and in the 2nd terminal:
+# ros2 run demo_nodes_cpp listener
+
+
 volumes:
   dummy_volume_fastdds:
   dummy_volume_cyclonedds:
