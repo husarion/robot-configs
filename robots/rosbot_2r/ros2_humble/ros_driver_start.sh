@@ -70,14 +70,17 @@ fi
 mkdir -p ~/.ros
 
 case "$1" in
-    "lidar")
+    "rplidar")
         docker compose -f $COMPOSE_FILE up -d rplidar
         ;;
-    "camera")
+    "astra")
         docker compose -f $COMPOSE_FILE up -d astra
         ;;
     "foxglove")
         docker compose -f $COMPOSE_FILE up -d foxglove-datasource foxglove
+        ;;
+    "ros2router")
+        docker compose -f $COMPOSE_FILE up -d ros2router
         ;;
     *)
         docker compose -f $COMPOSE_FILE up -d rosbot microros
