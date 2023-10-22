@@ -80,7 +80,7 @@ case "$1" in
         docker compose -f $COMPOSE_FILE up -d foxglove-datasource foxglove
         ;;
     "ros2router")
-        docker compose -f $COMPOSE_FILE up -d ros2router
+        docker compose -f $COMPOSE_FILE up ros2router
         ;;
     *)
         docker compose -f $COMPOSE_FILE up -d rosbot microros

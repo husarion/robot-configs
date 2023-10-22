@@ -97,15 +97,23 @@ services:
   # docker compose up ros2router
 
   ros2router:
-    image: husarnet/ros2router:allusers
-    <<: [*restart-policy, *ros-config]
+    image: husarnet/ros2router:ignore-participants
+    <<: *restart-policy
+    network_mode: host
+    ipc: host
+    pid: host
+    user: ${DOCKER_UID:-1000}:${DOCKER_GID:-1000} # *
     volumes:
+      - /etc/group:/etc/group:ro                  # *
+      - /etc/passwd:/etc/passwd:ro                # *
+      - /etc/shadow:/etc/shadow:ro                # *
       - ./filter.yaml:/filter.yaml
     environment:
-      - WHITELIST_INTERFACES="127.0.0.1" # if setting this param, you need to set "ROS_LOCALHOST_ONLY=1" on this host
-      - LISTENING_PORT=11888
-      - ID=0
+      - LOCAL_TRANSPORT=builtin
+      - DISCOVERY_SERVER_LISTENING_PORT=11888
+      - DISCOVERY_SERVER_ID=0
       - ROS_DOMAIN_ID
+      - ROS_LOCALHOST_ONLY
 
   # on the laptop run:
   # docker run --restart always --network host -e ROS_DISCOVERY_SERVER="rosbot2r:11888" -e ID=2 husarnet/ros2router:1.0.0
