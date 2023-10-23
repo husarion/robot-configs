@@ -39,7 +39,7 @@ services:
   rosbot:
     image: husarion/rosbot:humble
     <<: [*restart-policy, *ros-config]
-    command: ros2 launch rosbot_bringup bringup.launch.py
+    command: ros2 launch rosbot_bringup bringup.launch.py 
 
   microros:
     image: husarion/micro-ros-agent:humble
@@ -55,7 +55,7 @@ services:
       - /dev/ttyRPLIDAR:/dev/ttyUSB0
     command: >
         ros2 launch sllidar_ros2 sllidar_launch.py
-        serial_baudrate:=${RPLIDAR_BAUDRATE:-256000}
+        serial_baudrate:=${RPLIDAR_BAUDRATE:-256000} 
 
   astra:
     image: husarion/astra:humble
@@ -73,7 +73,7 @@ services:
   foxglove-datasource:
     image: husarion/rosbridge-server:humble
     <<: [*restart-policy, *ros-config]
-    command: ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+    command: ros2 launch rosbridge_server rosbridge_websocket_launch.xml 
 
   foxglove:
     image: husarion/foxglove:fix-cache-1.72.0

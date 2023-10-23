@@ -46,7 +46,7 @@ Modify `filter.yaml` file in run-time to change allow- and block-list.
 docker run \
 --restart always \
 --network host \
--e ROS_DISCOVERY_SERVER="rosbot2r:11888" \
+-e ROS_DISCOVERY_SERVER="rosbot2r:11811" \
 -e DISCOVERY_SERVER_ID=2 \
 husarnet/ros2router:1.2.0
 ```
@@ -62,17 +62,24 @@ Create a `ds_client.xml` file with the following content:
 
         <transport_descriptors>
             <transport_descriptor>
-                <transport_id>udpv6_transport</transport_id>
+                <transport_id>HusarnetTransport</transport_id>
                 <type>UDPv6</type>
             </transport_descriptor>
         </transport_descriptors>
 
-        <participant profile_name="client_profile" is_default_profile="true" >
+        <participant profile_name="client_profile" is_default_profile="true">
             <rtps>
                 <userTransports>
-                    <transport_id>udpv6_transport</transport_id>
+                    <transport_id>HusarnetTransport</transport_id>
                 </userTransports>
-                <useBuiltinTransports>false</useBuiltinTransports>
+                <useBuiltinTransports>true</useBuiltinTransports>
+                <defaultUnicastLocatorList>
+                    <locator>
+                        <udpv6>
+                            <address>husarnet-local</address>
+                        </udpv6>
+                    </locator>
+                </defaultUnicastLocatorList>
                 <builtin>
                     <discovery_config>
                         <discoveryProtocol>SUPER_CLIENT</discoveryProtocol>
