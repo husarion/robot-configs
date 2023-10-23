@@ -6,7 +6,7 @@ printenv | grep ROS
 
 ## Configs
 
-### Default
+### Using `ROS_DOMAIN_ID`
 
 ```
 ./ros_driver_stop.sh
@@ -15,7 +15,7 @@ unset ROS_LOCALHOST_ONLY
 ./ros_driver_start.sh
 ```
 
-### Localhost Only
+### Using `ROS_LOCALHOST_ONLY`
 
 ```
 ./ros_driver_stop.sh
@@ -24,7 +24,9 @@ export ROS_LOCALHOST_ONLY=1
 ./ros_driver_start.sh
 ```
 
-### Topic filtering over Husarnet
+### VPN only (with topic filtering)
+
+### On ROSbot 2R
 
 ```
 ./ros_driver_stop.sh
@@ -35,3 +37,68 @@ export ROS_LOCALHOST_ONLY=1
 ```
 
 Modify `filter.yaml` file in run-time to change allow- and block-list.
+
+### On remote desktop
+
+#### Option 1: `ros2router`
+
+```
+docker run \
+--restart always \
+--network host \
+-e ROS_DISCOVERY_SERVER="rosbot2r:11888" \
+-e DISCOVERY_SERVER_ID=2 \
+husarnet/ros2router:1.2.0
+```
+
+#### Option 2: `FASTRTPS_DEFAULT_PROFILES_FILE`
+
+Create a `ds_client.xml` file with the following content:
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<dds>
+    <profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+
+        <transport_descriptors>
+            <transport_descriptor>
+                <transport_id>udpv6_transport</transport_id>
+                <type>UDPv6</type>
+            </transport_descriptor>
+        </transport_descriptors>
+
+        <participant profile_name="client_profile" is_default_profile="true" >
+            <rtps>
+                <userTransports>
+                    <transport_id>udpv6_transport</transport_id>
+                </userTransports>
+                <useBuiltinTransports>false</useBuiltinTransports>
+                <builtin>
+                    <discovery_config>
+                        <discoveryProtocol>SUPER_CLIENT</discoveryProtocol>
+                        <discoveryServersList>
+                            <RemoteServer prefix="44.53.00.5f.45.50.52.4f.53.49.4d.41">
+                                <metatrafficUnicastLocatorList>
+                                    <locator>
+                                        <udpv6>
+                                            <address>rosbot2r</address>
+                                            <port>11811</port>
+                                        </udpv6>
+                                    </locator>
+                                </metatrafficUnicastLocatorList>
+                            </RemoteServer>
+                        </discoveryServersList>
+                    </discovery_config>
+                </builtin>
+            </rtps>
+        </participant>
+    </profiles>
+</dds>
+```
+
+and set the env:
+
+```
+export FASTRTPS_DEFAULT_PROFILES_FILE=$(pwd)/ds_client.xml
+ros2 daemon stop
+```
