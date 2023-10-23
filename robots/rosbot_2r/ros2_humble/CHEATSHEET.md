@@ -32,17 +32,6 @@ unset ROS_DOMAIN_ID
 export ROS_LOCALHOST_ONLY=1
 ./ros_driver_start.sh
 ./ros_driver_start.sh ros2router
-# now you can start another ROS 2 nodes locally, and
-# modify ./filter.yaml in the runtime
 ```
 
-This should also work but does not. TODO: test with ingore-participants-flags
-```
-./ros_driver_stop.sh
-export ROS_DOMAIN_ID=125
-unset ROS_LOCALHOST_ONLY
-./ros_driver_start.sh
-./ros_driver_start.sh ros2router
-# now you can start another ROS 2 nodes locally, and
-# modify ./filter.yaml in the runtime
-```
+Modify `filter.yaml` file in run-time to change allow- and block-list.
