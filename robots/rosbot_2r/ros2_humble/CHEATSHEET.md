@@ -51,7 +51,22 @@ docker run \
 husarnet/ros2router:1.2.0
 ```
 
-#### Option 2: `FASTRTPS_DEFAULT_PROFILES_FILE`
+#### Option 2: `ROS_DISCOVERY_SERVER` env
+
+This option works with IPv6 address from FastDDS `v2.8.0`:
+- ROS 2 Iron - contains FastDDS `v2.10.2`
+- ROS 2 Humble - includes FastDDS `2.6.6`
+
+```
+export ROS_DISCOVERY_SERVER=rosbot2r:11811
+ros2 daemon stop
+```
+
+> warning!
+>
+> This env runs FastDDS in a `CLIENT` (not `SUPER_CLIENT`) config, so eg. `ros2 topic list` will not show available topics, however they are accessible.
+
+#### Option 3: `FASTRTPS_DEFAULT_PROFILES_FILE` env
 
 Create a `ds_client.xml` file with the following content:
 
