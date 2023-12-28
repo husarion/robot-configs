@@ -1,13 +1,3 @@
-# Comments:
-#   * This is a temporary solution allowing shared memory communication between host and docker container when
-#     using Fast DDS. To be removed when user will be able to change this permission to something else than 0644 
-#     (https://github.com/eProsima/Fast-DDS/blob/master/thirdparty/boost/include/boost/interprocess/permissions.hpp#L100) 
-#
-#  ** If the FASTRTPS_DEFAULT_PROFILES_FILE or CYCLONEDDS_URI envs are defined, then we need to bind mount the volume
-#     with the DDS config to the container  
-#
-# *** Optional envs the ROS user may want to set - we need to pass them to the container
-
 x-restart-policy:
   &restart-policy
   restart: unless-stopped
@@ -17,36 +7,24 @@ x-ros-config:
   network_mode: host
   ipc: host
   pid: host
-  user: ${DOCKER_UID:-1000}:${DOCKER_GID:-1000} # *
-  volumes:
-    - /etc/group:/etc/group:ro                  # *
-    - /etc/passwd:/etc/passwd:ro                # *
-    - /etc/shadow:/etc/shadow:ro                # *
-    - /home/husarion/.ros:/home/husarion/.ros   # *
-    - ${FASTRTPS_DEFAULT_PROFILES_FILE:-dummy_volume_fastdds}:${FASTRTPS_DEFAULT_PROFILES_FILE:-/dummy_volume_fastdds}:ro  # **
-    - ${CYCLONEDDS_PATH:-dummy_volume_cyclonedds}:${CYCLONEDDS_PATH:-/dummy_volume_cyclonedds}:ro                          # **
+  shm_size: '256mb'
   environment:
-    - RMW_IMPLEMENTATION              # ***
-    - FASTRTPS_DEFAULT_PROFILES_FILE  # ***
-    - CYCLONEDDS_URI                  # ***
-    - ROS_DOMAIN_ID                   # ***
-    - ROS_LOCALHOST_ONLY
+    - ROS_DOMAIN_ID
+    - FASTRTPS_DEFAULT_PROFILES_FILE=/shm-only.xml
 
 services:
 
   # ============ basic services ============
-
   rosbot:
-    image: husarion/rosbot:humble
-    <<: [*restart-policy, *ros-config]
-    command: ros2 launch rosbot_bringup bringup.launch.py 
-
-  microros:
-    image: husarion/micro-ros-agent:humble
+    image: husarion/rosbot:humble-0.11.0-20231227
     <<: [*restart-policy, *ros-config]
     devices:
       - ${SERIAL_PORT:?err}
-    command: ros2 run micro_ros_agent micro_ros_agent serial -D $SERIAL_PORT serial -b 576000 # -v6
+    command: >
+      ros2 launch rosbot_bringup combined.launch.py 
+        mecanum:=${MECANUM:-False}
+        serial_port:=$SERIAL_PORT 
+        serial_baudrate:=576000
 
   rplidar:
     image: husarion/rplidar:humble
@@ -60,10 +38,12 @@ services:
   astra:
     image: husarion/astra:humble
     <<: [*restart-policy, *ros-config]
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
+    volumes:
+      - ./config/astra.yaml:/ros2_ws/install/astra_camera/share/astra_camera/params/astra_mini_params.yaml
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '1.0'
     devices:
       - /dev/bus/usb/
     command: ros2 launch astra_camera astra_mini.launch.py
@@ -71,20 +51,22 @@ services:
   # ============ web ui services ============
 
   foxglove-datasource:
-    image: husarion/rosbridge-server:humble
+    image: husarion/foxglove-bridge:humble-0.7.3-20231213
     <<: [*restart-policy, *ros-config]
-    command: ros2 launch rosbridge_server rosbridge_websocket_launch.xml 
+    command: ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8765 capabilities:=[clientPublish,parameters,parametersSubscribe,services,connectionGraph,assets]
 
   foxglove:
-    image: husarion/foxglove:fix-cache-1.72.0
+    image: husarion/foxglove:1.81.0
     <<: *restart-policy
     ports:
       - 8080:8080
+      - "[::]:8765:8765"
     volumes:
-      - ./foxglove_layout.json:/foxglove/default-layout.json
+      - ./config/foxglove_layout.json:/foxglove/default-layout.json
     environment:
-      - DS_TYPE=rosbridge-websocket
-      - DS_PORT=9090
+      - DS_TYPE=foxglove-websocket
+      - DS_PORT=8765
+      - DS_HOST=172.17.0.1
       - UI_PORT=8080
       - DISABLE_CACHE=true
       - DISABLE_INTERACTION=false
@@ -97,29 +79,17 @@ services:
   # docker compose up ros2router
 
   ros2router:
-    image: husarnet/ros2router:1.2.0
+    image: husarnet/ros2router:1.5.0
     <<: *restart-policy
     network_mode: host
     ipc: host
+    # ipc: shareable
     pid: host
-    user: ${DOCKER_UID:-1000}:${DOCKER_GID:-1000} # *
     volumes:
-      - /etc/group:/etc/group:ro                  # *
-      - /etc/passwd:/etc/passwd:ro                # *
-      - /etc/shadow:/etc/shadow:ro                # *
-      - ./filter.yaml:/filter.yaml
+      - ./config/filter.yaml:/filter.yaml
     environment:
-      - LOCAL_TRANSPORT=builtin
-      - DISCOVERY_SERVER_LISTENING_PORT=${DISCOVERY_SERVER_LISTENING_PORT:-11811}
-      - DISCOVERY_SERVER_ID=${DISCOVERY_SERVER_ID:-0}
-      - ROS_DOMAIN_ID
-      - ROS_LOCALHOST_ONLY
+      - ROS_DISTRO
+      - ROS_LOCALHOST_ONLY=1
+      - DISCOVERY_SERVER_LISTENING_PORT=11811
+      - DISCOVERY_SERVER_ID=0
 
-  # on the laptop run:
-  # docker run --restart always --network host -e ROS_DISCOVERY_SERVER="rosbot2r:11888" -e ID=2 husarnet/ros2router:1.0.0
-  # and in the 2nd terminal:
-  # ros2 run demo_nodes_cpp listener
-
-volumes:
-  dummy_volume_fastdds:
-  dummy_volume_cyclonedds:

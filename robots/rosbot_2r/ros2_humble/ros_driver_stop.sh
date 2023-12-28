@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Get the current user
 CURRENT_USER=$(whoami)
@@ -24,13 +25,6 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Define the docker-compose file
 COMPOSE_FILE="$SCRIPT_DIR/compose.yaml"
-
-# This is a temporary solution allowing shared memory communication between 
-# host and docker container. To be removed when user will be able to change this permission
-# to something else than 0644 (https://github.com/eProsima/Fast-DDS/blob/master/thirdparty/boost/include/boost/interprocess/permissions.hpp#L100) 
-# You need to start containers first, after that new files in /dev/shm/ are created. We need to change their permissions to 0666
-export DOCKER_UID=$(id -u husarion)
-export DOCKER_GID=$(id -g husarion)
 
 docker compose -f $COMPOSE_FILE down
 ros2 daemon stop

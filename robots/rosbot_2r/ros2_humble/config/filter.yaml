@@ -1,0 +1,12 @@
+allowlist:
+  - name: "*"
+  # - name: "rt/*"  # all ROS topics 
+  # - name: "rp/*"  # all ROS parameters
+  # - name: "rs/*"  # all ROS services
+  # - name: "rq/*"  # all ROS Service Requests
+  # - name: "rr/*"  # all ROS Service Responses
+
+  # - name: "rt/cmd_vel"
+  #   type: "geometry_msgs::msg::dds_::Twist_"
+blocklist: []
+builtin-topics: []

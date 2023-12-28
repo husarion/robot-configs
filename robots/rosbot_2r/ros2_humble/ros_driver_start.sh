@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Get the current user
 CURRENT_USER=$(whoami)
@@ -7,6 +8,11 @@ CURRENT_USER=$(whoami)
 if [ "$CURRENT_USER" != "husarion" ]; then
   echo "This script can only be run by the user 'husarion'."
   exit 1
+fi
+
+if [ -z "${1-}" ]; then
+    DEFAULT_VALUE="rosbot"
+    set -- "$DEFAULT_VALUE" "${@:2}"
 fi
 
 # Define color codes
@@ -24,13 +30,6 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Define the docker-compose file
 COMPOSE_FILE="$SCRIPT_DIR/compose.yaml"
-
-# This is a temporary solution allowing shared memory communication between 
-# host and docker container. To be removed when user will be able to change this permission
-# to something else than 0644 (https://github.com/eProsima/Fast-DDS/blob/master/thirdparty/boost/include/boost/interprocess/permissions.hpp#L100) 
-# You need to start containers first, after that new files in /dev/shm/ are created. We need to change their permissions to 0666
-export DOCKER_UID=$(id -u husarion)
-export DOCKER_GID=$(id -g husarion)
 
 # Extract service images from the compose file
 SERVICE_IMAGES=$(docker compose -f $COMPOSE_FILE config | grep 'image:' | awk '{print $2}')
@@ -60,33 +59,22 @@ fi
 echo -e "\r\n${GREEN}[2/2]\r\nLaunching ROS 2 Driver${NC}"
 echo -e "ROS_LOCALHOST_ONLY=$ROS_LOCALHOST_ONLY"
 
-prefix="file://"
-if [[ $CYCLONEDDS_URI == "$prefix"* ]]; then
-    export CYCLONEDDS_PATH=${CYCLONEDDS_URI#file://}
-else
-    export CYCLONEDDS_PATH=""
-fi
-
 mkdir -p ~/.ros
 
 case "$1" in
     "rplidar")
-        docker compose -f $COMPOSE_FILE up -d rplidar
+        docker compose -f $COMPOSE_FILE up -d rosbot ros2router rplidar
         ;;
     "astra")
-        docker compose -f $COMPOSE_FILE up -d astra
+        docker compose -f $COMPOSE_FILE up -d rosbot ros2router astra
         ;;
-    "foxglove")
-        docker compose -f $COMPOSE_FILE up -d foxglove-datasource foxglove
+    "foxglove"|"webui"|"web_ui")
+        docker compose -f $COMPOSE_FILE up -d rosbot ros2router rplidar astra foxglove-datasource foxglove
         ;;
-    "ros2router")
-        docker compose -f $COMPOSE_FILE up -d ros2router
-        ;;
-    *)
-        docker compose -f $COMPOSE_FILE up -d rosbot microros
+    "rosbot")
+        docker compose -f $COMPOSE_FILE up -d rosbot ros2router
         ;;
 esac
-
 
 sleep 3
 

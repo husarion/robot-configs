@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Get the current user
 CURRENT_USER=$(whoami)
@@ -10,7 +11,7 @@ if [ "$CURRENT_USER" != "husarion" ]; then
 fi
 
 # Define the Docker image
-DOCKER_IMAGE=$(yq .services.rosbot.image /home/husarion/compose.yaml)
+DOCKER_IMAGE=$(yq .services.rosbot.image $(dirname "$0")/compose.yaml)
 
 # Define color codes
 GREEN='\033[0;32m'
@@ -19,7 +20,7 @@ RED='\033[0;31m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}[1/3]\r\nInitiating firmware flash on the ROSbot's STM32F4 microcontroller. We're using the Docker image ${BOLD}$DOCKER_IMAGE${NC}${GREEN} for this process...${NC}"
+echo -e "${GREEN}[1/2]\r\nInitiating firmware flash on the ROSbot's STM32F4 microcontroller. We're using the Docker image ${BOLD}$DOCKER_IMAGE${NC}${GREEN} for this process...${NC}"
 
 # Check if the Docker image exists
 if ! docker image inspect $DOCKER_IMAGE >/dev/null 2>&1; then
@@ -28,27 +29,24 @@ if ! docker image inspect $DOCKER_IMAGE >/dev/null 2>&1; then
 fi
 echo -e "${GREEN}done${NC}"
 
-# Stop the Docker containers if they're running
-echo -e "\r\n${GREEN}[2/3]\r\nStop ${BOLD}rosbot${NC}${GREEN} and ${BOLD}microros${NC}${GREEN} Docker containers if they're running ${NC}"
+# Get the list of running container IDs
+CONTAINER_IDS=$(docker ps -q)
 
-# Define the Docker containers
-CONTAINERS=("rosbot" "microros")
-
-# Loop through each container and stop it if it exists and is running
-for CONTAINER in "${CONTAINERS[@]}"; do
-    CONTAINER_ID=$(docker ps -q -f name=$CONTAINER)
-    if [ ! -z "$CONTAINER_ID" ]; then
-        echo "Stopping container $CONTAINER..."
-        docker stop $CONTAINER
-    fi
-done
+# Check if the variable is not empty
+if [ -n "$CONTAINER_IDS" ]; then
+    # If there are running containers, stop them
+    docker stop $CONTAINER_IDS
+else
+    # If there are no running containers, do nothing
+    echo "No running containers to stop."
+fi
 
 # Flashing
 
-echo -e "\r\n${GREEN}[3/3]\r\nFlashing the firmware...${NC}"
+echo -e "\r\n${GREEN}[2/2]\r\nFlashing the firmware...${NC}"
 
 docker run --rm -it --privileged \
 $DOCKER_IMAGE \
-/flash-firmware.py /root/firmware.bin
+ros2 run rosbot_utils flash_firmware
 
 echo -e "${GREEN}done${NC}"
