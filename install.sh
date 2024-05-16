@@ -25,6 +25,9 @@ do
 
     # Copy the file to /usr/lib/husarion with "subfolder.sh" name
     cp "$file" "/usr/lib/husarion/custom_config_${dirname}.sh"
+
+    # Grant execution rights to a file
+    chmod +x /usr/lib/husarion/custom_config_${dirname}.sh
 done
 
 # Copy the setup_robot_configuration script to /usr/local/sbin/
