@@ -7,12 +7,12 @@ Before=time-sync.target
 After=network.target
 [Service]
 Type=forking
-PIDFile=/run/chronyd.pid
+PIDFile=/var/run/chrony/chronyd.pid
 EnvironmentFile=-/etc/default/chrony
 # Starter takes care of special cases mostly for containers
 ExecStartPre=/bin/bash -c "hwclock -s"
 ExecStart=/usr/lib/systemd/scripts/chronyd-starter.sh $DAEMON_OPTS
-ExecStartPost=-/usr/lib/chrony/chrony-helper update-daemon
+ExecStartPost=-/usr/libexec/chrony/chrony-helper update-daemon
 PrivateTmp=yes
 ProtectHome=yes
 ProtectSystem=full
