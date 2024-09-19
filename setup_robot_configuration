@@ -30,6 +30,8 @@ fi
 if [ -z "$2" ]; then
   if [ "$IMAGE_TYPE" == "VULCANEXUS_HUMBLE" ]; then
     ros_version="vulcanexus_humble"
+  elif [ "$IMAGE_TYPE" == "ROS2_JAZZY" ]; then
+    ros_version="ros2_jazzy"
   elif [ "$IMAGE_TYPE" == "ROS2_HUMBLE" ]; then
     ros_version="ros2_humble"
   elif [ "$IMAGE_TYPE" == "ROS2_FOXY" ]; then
@@ -41,7 +43,7 @@ if [ -z "$2" ]; then
     exit 1
   fi
 else
-  if [ "$2" == "vulcanexus_humble" ] || [ "$2" == "ros2_humble" ] || [ "$2" == "ros_noetic" ]; then
+  if [ "$2" == "vulcanexus_humble" ] || [ "$2" == "ros2_jazzy" ] || [ "$2" == "ros2_humble" ] || [ "$2" == "ros_noetic" ]; then
     ros_version="$2"
   else
     echo "Error: Invalid ROS version specified: $2"
@@ -57,7 +59,7 @@ if [ -z "$1" ]; then
   echo "Using default configuration"
   exit 0
 else
-  if [ "$1" == "rosbot_xl" ] || [ "$1" == "rosbot_2r" ] || [ "$1" == "rosbot_2_pro" ] || [ "$1" == "panther" ]; then
+  if [ "$1" == "rosbot_xl" ] || [ "$1" == "rosbot_3_pro" ] || [ "$1" == "rosbot_2r" ] || [ "$1" == "rosbot_2_pro" ] || [ "$1" == "panther" ]; then
     robot_model="$1"
   else
     echo "Error: Invalid robot model: $1"
