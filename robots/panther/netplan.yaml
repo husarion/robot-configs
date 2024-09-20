@@ -7,9 +7,8 @@ network:
     all-eths:
       match:
         name: eth*
-      dhcp4: yes
-      dhcp6: yes
+      dhcp4: false
+      dhcp6: false
       optional: true
       addresses:
         - 10.15.20.3/24
-        - 192.168.77.2/24
