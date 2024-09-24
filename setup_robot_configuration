@@ -59,7 +59,7 @@ if [ -z "$1" ]; then
   echo "Using default configuration"
   exit 0
 else
-  if [ "$1" == "rosbot_xl" ] || [ "$1" == "rosbot_3_pro" ] || [ "$1" == "rosbot_2r" ] || [ "$1" == "rosbot_2_pro" ] || [ "$1" == "panther" ]; then
+  if [ "$1" == "rosbot_xl" ] || [ "$1" == "rosbot_3" ] || [ "$1" == "rosbot_2r" ] || [ "$1" == "rosbot_2_pro" ] || [ "$1" == "panther" ]; then
     robot_model="$1"
   else
     echo "Error: Invalid robot model: $1"
