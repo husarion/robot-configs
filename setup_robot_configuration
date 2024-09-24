@@ -78,6 +78,8 @@ bash /usr/lib/husarion/custom_config_${robot_model}.sh
 mkdir /home/husarion/.ros
 chown husarion:husarion /home/husarion/.ros
 
+sudo chmod 600 /etc/netplan/01-network-manager-all.yaml
+
 # Generating new SSH credentials
 ssh-keygen -A
 systemctl restart sshd
