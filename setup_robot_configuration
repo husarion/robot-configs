@@ -66,14 +66,14 @@ else
     echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
     exit 1
   fi
+
+  echo "Robot model: ${robot_model}"
+
+  cp -rp /etc/husarion/robot_configs/${robot_model}/${ros_version}/* /home/husarion
+  dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb
+  cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
+  bash /usr/lib/husarion/custom_config_${robot_model}.sh
 fi
-
-echo "Robot model: ${robot_model}"
-
-cp -rp /etc/husarion/robot_configs/${robot_model}/${ros_version}/* /home/husarion
-dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb
-cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
-bash /usr/lib/husarion/custom_config_${robot_model}.sh
 
 mkdir /home/husarion/.ros
 chown husarion:husarion /home/husarion/.ros
@@ -81,8 +81,10 @@ chown husarion:husarion /home/husarion/.ros
 sudo chmod 600 /etc/netplan/01-network-manager-all.yaml
 
 # Generating new SSH credentials
+sudo echo "" > /root/.ssh/authorized_keys
+sudo rm -rf /etc/ssh/ssh_host_*
 ssh-keygen -A
-systemctl restart sshd
+# systemctl restart ssh.service 
 
 # Print success message
 echo ""
