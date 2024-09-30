@@ -54,11 +54,12 @@ sudo snap set husarion-rplidar configuration=s2
 echo "---------------------------------------"
 echo "Setting up the \"husarion-depthai\" snap"
 sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
+sudo snap set husarion-depthai driver.parent-frame=camera_link
 
 echo "---------------------------------------"
 echo "Setting up the \"husarion-webui\" snap"
+sudo cp foxglove-rosbot3.json /var/snap/husarion-webui/common/
 sudo snap set husarion-webui webui.layout=rosbot3
-sudo husarion-webui.start
 
 echo "---------------------------------------"
 echo "Default DDS params on host"
@@ -70,6 +71,7 @@ echo "Start all snap"
 
 for snap in "${SNAP_LIST[@]}"; do
     sudo "$snap".start
+    # sudo "$snap".restart
 done
 
 end_time=$(date +%s)
