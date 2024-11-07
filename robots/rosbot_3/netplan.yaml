@@ -1,0 +1,39 @@
+network:
+  version: 2
+  renderer: NetworkManager
+
+  ethernets:
+
+    all-eths:
+      match:
+        name: eth*
+      dhcp4: no
+      dhcp6: no
+      optional: true
+      addresses:
+        - 192.168.77.2/24
+  
+  wifis:
+
+    # standard Wi-Fi config (client)
+    # ========================================
+    wlan0:
+      dhcp4: true
+      dhcp6: true
+      optional: true
+      access-points:
+        "PLACE_YOUR_WIFI_SSID_HERE":
+          password: "PLACE_YOUR_WIFI_PASSWORD_HERE"
+
+    # access point Wi-Fi config
+    # ========================================
+    # wlan0: 
+    #   dhcp4: no
+    #   dhcp6: no
+    #   addresses:
+    #     - 192.168.100.1/24
+    #   access-points:
+    #     "rosbotap":
+    #       band: 5GHz
+    #       mode: "ap"
+    #       password: "husarion"

@@ -1,5 +1,5 @@
 [Unit]
-Description=Reset MCU in ROSbot 2R / 2 PRO on startup
+Description=Reset MCU in ROSbot 2R / 2 PRO / 3 PRO on startup
 
 [Service]
 Type=simple

@@ -30,6 +30,8 @@ fi
 if [ -z "$2" ]; then
   if [ "$IMAGE_TYPE" == "VULCANEXUS_HUMBLE" ]; then
     ros_version="vulcanexus_humble"
+  elif [ "$IMAGE_TYPE" == "ROS2_JAZZY" ]; then
+    ros_version="ros2_jazzy"
   elif [ "$IMAGE_TYPE" == "ROS2_HUMBLE" ]; then
     ros_version="ros2_humble"
   elif [ "$IMAGE_TYPE" == "ROS2_FOXY" ]; then
@@ -41,7 +43,7 @@ if [ -z "$2" ]; then
     exit 1
   fi
 else
-  if [ "$2" == "vulcanexus_humble" ] || [ "$2" == "ros2_humble" ] || [ "$2" == "ros_noetic" ]; then
+  if [ "$2" == "vulcanexus_humble" ] || [ "$2" == "ros2_jazzy" ] || [ "$2" == "ros2_humble" ] || [ "$2" == "ros_noetic" ]; then
     ros_version="$2"
   else
     echo "Error: Invalid ROS version specified: $2"
@@ -57,28 +59,32 @@ if [ -z "$1" ]; then
   echo "Using default configuration"
   exit 0
 else
-  if [ "$1" == "rosbot_xl" ] || [ "$1" == "rosbot_2r" ] || [ "$1" == "rosbot_2_pro" ] || [ "$1" == "panther" ]; then
+  if [ "$1" == "rosbot_xl" ] || [ "$1" == "rosbot_3" ] || [ "$1" == "rosbot_2r" ] || [ "$1" == "rosbot_2_pro" ] || [ "$1" == "panther" ]; then
     robot_model="$1"
   else
     echo "Error: Invalid robot model: $1"
     echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
     exit 1
   fi
+
+  echo "Robot model: ${robot_model}"
+
+  cp -rp /etc/husarion/robot_configs/${robot_model}/${ros_version}/* /home/husarion
+  dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb
+  cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
+  bash /usr/lib/husarion/custom_config_${robot_model}.sh
 fi
-
-echo "Robot model: ${robot_model}"
-
-cp -rp /etc/husarion/robot_configs/${robot_model}/${ros_version}/* /home/husarion
-dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb
-cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
-bash /usr/lib/husarion/custom_config_${robot_model}.sh
 
 mkdir /home/husarion/.ros
 chown husarion:husarion /home/husarion/.ros
 
+sudo chmod 600 /etc/netplan/01-network-manager-all.yaml
+
 # Generating new SSH credentials
+sudo echo "" > /root/.ssh/authorized_keys
+sudo rm -rf /etc/ssh/ssh_host_*
 ssh-keygen -A
-systemctl restart sshd
+# systemctl restart ssh.service 
 
 # Print success message
 echo ""
