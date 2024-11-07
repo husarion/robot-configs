@@ -1,6 +1,6 @@
 # robot-configs
 
-Basic Husarion robots configs for Husarion OS 
+Basic Husarion robots configs for Husarion OS
 
 ## Installing
 

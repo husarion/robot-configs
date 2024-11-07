@@ -9,3 +9,5 @@ cp ${CONFIG_FILES_PATH}/files/chrony.conf /etc/chrony/chrony.conf
 cp ${CONFIG_FILES_PATH}/files/chrony.service /lib/systemd/system/chrony.service
 cp ${CONFIG_FILES_PATH}/files/hwclock-set /lib/udev/hwclock-set
 
+# Set default rmw as cyclonedds
+echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc
