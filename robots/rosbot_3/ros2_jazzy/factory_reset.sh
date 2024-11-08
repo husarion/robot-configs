@@ -13,46 +13,73 @@ SNAP_LIST=(
     husarion-webui
 )
 
+ROS_DISTRO=${ROS_DISTRO:-humble}
+
+start_time=$(date +%s)
+
+/var/snap/rosbot/common/manage_ros_env.sh remove
+sudo /var/snap/rosbot/common/manage_ros_env.sh remove
+
 for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
     echo "removing the \"$snap\" snap"
     sudo snap remove "$snap" 
 done
 
+for snap in "${SNAP_LIST[@]}"; do
+    echo "---------------------------------------"
+    echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO)"
+    sudo snap install "$snap" --channel="$ROS_DISTRO"
+    sudo "$snap".stop
+    sudo snap set "$snap" \
+        ros.transport=udp-lo \
+        ros.localhost-only='' \
+        ros.domain-id=0 \
+        ros.namespace=''
+done
+
 echo "---------------------------------------"
 echo "Setting up the \"rosbot\" snap"
-sudo snap install rosbot --channel=jazzy
+sudo snap connect rosbot:shm-plug rosbot:shm-slot
 sudo /var/snap/rosbot/common/post_install.sh
+sudo rosbot.stop
 sleep 2
 sudo rosbot.flash
 
 echo "---------------------------------------"
 echo "Setting up the \"husarion-rplidar\" snap"
-sudo snap install husarion-rplidar --channel=jazzy
+sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
 sudo snap set husarion-rplidar configuration=s2
 
 echo "---------------------------------------"
 echo "Setting up the \"husarion-depthai\" snap"
-sudo snap install husarion-depthai --channel=jazzy
+sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
+sudo snap set husarion-depthai driver.parent-frame=camera_link
 
 echo "---------------------------------------"
 echo "Setting up the \"husarion-webui\" snap"
-sudo snap install husarion-webui --channel=jazzy
+sudo cp foxglove-rosbot3.json /var/snap/husarion-webui/common/
 sudo snap set husarion-webui webui.layout=rosbot3
-
-echo "---------------------------------------"
-echo "Default DDS params"
-for snap in "${SNAP_LIST[@]}"; do
-    echo "---------------------------------------"
-    sudo snap set "$snap" ros.transport=udp-lo
-    sudo snap set "$snap" ros.localhost-only=''
-    sudo snap set "$snap" ros.domain-id=0
-    sudo snap set "$snap" ros.namespace=''
-done
 
 echo "---------------------------------------"
 echo "Default DDS params on host"
 /var/snap/rosbot/common/manage_ros_env.sh
+sudo /var/snap/rosbot/common/manage_ros_env.sh
 
-sudo rosbot.restart
-sudo husarion-webui.start
+echo "---------------------------------------"
+echo "Start all snap"
+
+for snap in "${SNAP_LIST[@]}"; do
+    sudo "$snap".start
+    # sudo "$snap".restart
+done
+
+end_time=$(date +%s)
+duration=$(( end_time - start_time ))
+
+hours=$(( duration / 3600 ))
+minutes=$(( (duration % 3600) / 60 ))
+seconds=$(( duration % 60 ))
+
+printf "Script completed in %02d:%02d:%02d (hh:mm:ss)\n" $hours $minutes $seconds
+
