@@ -9,6 +9,11 @@ cp ${CONFIG_FILES_PATH}/files/chrony.conf /etc/chrony/chrony.conf
 cp ${CONFIG_FILES_PATH}/files/chrony.service /lib/systemd/system/chrony.service
 cp ${CONFIG_FILES_PATH}/files/hwclock-set /lib/udev/hwclock-set
 
+# Disable dhcp-server
+sudo service isc-dhcp-server stop
+sudo systemctl disable isc-dhcp-server
+sudo systemctl daemon-reload
+
 # ROS config
 if [ "$ROS_DISTRO" == "noetic" ]; then
   echo "ROS_IP=10.15.20.3" >> /etc/environment
