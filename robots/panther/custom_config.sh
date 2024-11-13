@@ -15,7 +15,7 @@ if [ "$ROS_DISTRO" == "noetic" ]; then
   echo "ROS_MASTER_URI=http://10.15.20.2:11311" >> /etc/environment
 else
   # Set default rmw as cyclonedds
-  echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc
+  echo "RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> /etc/environment
 fi
 
 # Enable soft shutdown
