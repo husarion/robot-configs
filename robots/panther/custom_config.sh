@@ -14,6 +14,14 @@ sudo service isc-dhcp-server stop
 sudo systemctl disable isc-dhcp-server
 sudo systemctl daemon-reload
 
+# Disable network config
+sudo echo 'network: {config: disabled}' > /etc/netplan/99-disable-network-config.cfg
+
+# Udev rules for PAD02
+sudo echo 'ACTION=="add", ,ATTRS{interface}=="PAD02 Dongle", SYMLINK+="ttyUSBPAD"' > /etc/udev/rules.d/99-pad02.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+
 # ROS config
 if [ "$ROS_DISTRO" == "noetic" ]; then
   echo "ROS_IP=10.15.20.3" >> /etc/environment
