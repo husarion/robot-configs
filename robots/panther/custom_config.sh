@@ -14,7 +14,8 @@ sudo service isc-dhcp-server stop
 sudo systemctl disable isc-dhcp-server
 sudo systemctl daemon-reload
 
-# Disable network config
+# Disable cloud-init network config
+sudo rm -rf /etc/netplan/50-cloud-init.yaml 
 sudo echo 'network: {config: disabled}' > /etc/netplan/99-disable-network-config.cfg
 
 # Udev rules for PAD02
