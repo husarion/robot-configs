@@ -12,3 +12,8 @@ network:
       optional: true
       addresses:
         - 10.15.20.3/24
+      routes:
+        - to: default
+          via: 10.15.20.1
+      nameservers:
+        addresses: [8.8.8.8]
