@@ -1,0 +1,71 @@
+remote_ip := "10.15.20.2"
+remote_host := "husarion"
+passwd := "husarion"
+
+_install_package package:
+  #!/bin/bash
+  if ! command -v {{package}} &> /dev/null; then
+    echo "Installing {{package}}"
+    sudo apt update && sudo apt install -y {{package}}
+  else
+    echo "{{package}} is already installed"
+  fi
+
+_ssh_command +command:
+  sshpass -p "{{passwd}}" ssh {{remote_host}}@{{remote_ip}} "{{command}}"
+
+_install_dependencies:
+  @echo "Installing dependencies"
+  just _install_package sshpass
+  just _install_package rsync
+
+init_config: _install_dependencies
+  @echo "Initializing config directory"
+  mkdir -p config
+  sshpass -p "{{passwd}}" rsync -avr {{remote_host}}@{{remote_ip}}:/home/husarion/config/ ./config/
+
+update_config:
+  @echo "Updating robot configuration"
+  sshpass -p "{{passwd}}" rsync -avr ./config/ {{remote_host}}@{{remote_ip}}:/home/husarion/config/
+
+restart_driver:
+  @echo "Restarting driver"
+  just _ssh_command "docker compose up --force-recreate -d"
+
+driver_logs *additional_args:
+  just _ssh_command "docker logs husarion_ugv_ros {{additional_args}}"
+
+restore_default mode="soft":
+  @echo "Restoring default robot configuration"
+  {{ if mode == "hard" { "just _hard_reset" } else { "" } }}
+  just _ssh_command "docker exec husarion_ugv_ros bash -c 'source /ros2_ws/install/setup.bash && update_config_directory'"
+  just init_config
+
+_hard_reset:
+  @echo "Performing hard reset"
+  find ./config -mindepth 1 -maxdepth 1 -not -name 'common' -exec rm -rf {} +
+  just _ssh_command "find /home/husarion/config -mindepth 1 -maxdepth 1 -not -name 'common' -exec rm -rf {} +"
+
+list_driver_versions ros_distro="humble":
+  @echo "Listing available driver versions"
+  wget -q -O - "https://hub.docker.com/v2/namespaces/husarion/repositories/panther/tags?page_size=100" | \
+  grep -o '"name": *"[^"]*' | \
+  grep -o '[^"]*$' | \
+  grep "{{ros_distro}}-[0-9]*\.[0-9]*\.[0-9]-[0-9]\{8\}" | \
+  sort -V
+
+update_driver_version version:
+  #!/bin/bash
+  ros_distro=$(echo "{{version}}" | cut -d'-' -f1)
+  if ! just list_driver_versions $ros_distro | grep -qw "^{{version}}$"; then
+    echo "Version {{version}} not found"
+    exit 1
+  fi
+  echo "Updating driver to version {{version}}"
+  just _ssh_command "sed -i 's/\(image: husarion\/panther:\)[^ ]*/\1{{version}}/' /home/husarion/compose.yaml"
+
+  echo "Do you want to restart the driver now? [y/N]"
+  read -r response
+  if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+    just restart_driver
+  fi
