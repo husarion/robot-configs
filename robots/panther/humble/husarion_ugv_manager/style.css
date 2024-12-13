@@ -1,0 +1,23 @@
+ScrollableContainer #command_list{
+    overflow: auto;
+    align: center top;
+}
+
+ListView {
+    width: 100%;
+    height: auto;
+    margin: 1 1;
+}
+
+ScrollableContainer Label {
+    padding: 1 1;
+}
+
+OutputLabel {
+    padding: 1 1;
+    text-align: left;
+}
+
+.hidden {
+    display: none;
+}
