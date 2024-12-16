@@ -21,3 +21,28 @@ OutputLabel {
 .hidden {
     display: none;
 }
+
+ConfirmationScreen {
+    align: center middle;
+    height: 10;
+    content-align: center middle;
+}
+
+#confirmation_grid {
+    grid-size: 1 ;
+    grid-gutter: 1 1;
+    grid-rows: 1fr 1fr;
+    padding: 0 1;
+    width: 50;
+    height: 10;
+    border: thick $background 80%;
+    background: $surface;
+    /* align: center top; */
+}
+
+#question {
+    /* column-span: 1; */
+    height: 1fr;
+    width: 1fr;
+    content-align: center middle;
+}

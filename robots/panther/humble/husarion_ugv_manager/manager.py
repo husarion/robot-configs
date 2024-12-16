@@ -1,6 +1,9 @@
 import os
-from textual import on
+from textual import work
 from textual.app import App, ComposeResult
+from textual.containers import ScrollableContainer, Container, Grid
+from textual.reactive import reactive
+from textual.screen import ModalScreen
 from textual.widgets import (
     Footer,
     Header,
@@ -12,8 +15,7 @@ from textual.widgets import (
     Log,
     OptionList,
 )
-from textual.containers import ScrollableContainer, Container
-from textual.reactive import reactive
+from textual.worker import WorkerState
 
 import subprocess
 import time
@@ -48,61 +50,39 @@ class VersionsList(OptionList):
         return self.selected_option
 
 
-class ConfirmationPrompt(Static):
+class ConfirmationScreen(ModalScreen[bool]):
+    def __init__(self, question: str) -> None:
+        self._question = question
+        super().__init__()
 
-    confirmed = reactive(None)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def compose(self):
-        yield Label("Are you sure you want to continue?")
-        yield OptionList("Yes", "No", id="confirmation_options")
-
-    def on_show(self):
-        self.query_one("#confirmation_options").focus()
-
-    def watch_selection(self, value: bool):
-        self.selection = value
+    def compose(self) -> ComposeResult:
+        with Grid(id="confirmation_grid"):
+            yield Label(self._question, id="question")
+            yield OptionList("Yes", "No", id="confirmation_options")
 
     def on_option_list_option_selected(self, event: OptionList.OptionSelected):
         if event.option.prompt == "Yes":
-            self.confirmed = True
+            self.dismiss(True)
         else:
-            self.confirmed = False
-
-        self.classes = "hidden"
-
-    def ask_for_confirmation(self):
-        self.confirmed = None
-        self.classes = ""
-
-        self.query_one("#confirmation_options").focus()
-
-        self.set_interval(0.1, self.check_confirmation)
-
-        # while self.confirmed is None:
-        #     time.sleep(0.1)
-
-        return self.confirmed
+            self.dismiss(False)
 
 
 class ConfigManager(App):
     """A Textual app to manage Husarion UGV robot."""
 
-    BINDINGS = [("d", "toggle_dark", "Toggle dark mode"), ("q", "quit", "Quit the app")]
-
+    SCREENS = {"confirmation_screen": ConfirmationScreen}
+    BINDINGS = [
+        ("d", "toggle_dark", "Toggle dark mode"),
+        ("q", "quit", "Quit the app"),
+    ]
     CSS_PATH = os.path.join(os.path.dirname(__file__), "style.css")
 
     log_text = reactive("")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
-        self.last_command_output = ""
-        
-        self._command_thread = None
 
+        self.last_command_output = ""
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
@@ -121,10 +101,9 @@ class ConfigManager(App):
 
         yield Log(id="output_log")
 
-        yield ConfirmationPrompt(id="confirmation_prompt", classes="hidden")
+        # yield ConfirmationPrompt(id="confirmation_prompt", classes="hidden")
 
         yield VersionsList(id="versions_list", classes="hidden")
-
 
     def on_mount(self) -> None:
         self.query_one(ListView).focus()
@@ -144,15 +123,16 @@ class ConfigManager(App):
         elif id == "driver_logs":
             self.run_command("just driver_logs")
         elif id == "restore_default":
-            self.query_one("#confirmation_prompt").ask_for_confirmation()
-            self.log_text = "Restoring default configuration..."
+            self.push_screen(ConfirmationScreen("Are you sure you want to restore default configuration?"))
+            # self._restore_default()
+            # if self.ask_for_confirmation():
+            # self._restore_default()
             # self.run_command("just restore_default")
         elif id == "list_driver_versions":
             output = self.run_command("just list_driver_versions")
+            self.log_text = output.state.name
         elif id == "update_driver_version":
             self.run_command("just list_driver_versions")
-            # while self._command_thread.:
-            #     time.sleep(0.1)
             versions = self.last_command_output.split("\n")
             self.query_one("#versions_list").get_version(versions)
             self.run_command("just update_driver_version")
@@ -164,36 +144,38 @@ class ConfigManager(App):
         log = self.query_one(Log)
         log.write_line(value)
 
-    def run_command(self, command):
-        def target():
-            process = subprocess.Popen(
-                command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
+    # def check_prompt(self, confirmed: bool) -> None:
+    #     if confirmed:
+    #         self.log_text = "Restoring default configuration..."
+            # self.run_command("just restore_default")
 
-            self.last_command_output = ""
-            while True:
-                output = process.stdout.readline()
+    @work(exclusive=True, thread=True)
+    def run_command(self, command) -> None:
+        process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
 
-                if process.poll() is not None and output == "":
-                    break
+        self.last_command_output = ""
+        while True:
+            output = process.stdout.readline()
 
-                self.log_text = output
-                self.last_command_output += output
+            if process.poll() is not None and output == "":
+                break
 
-        self._command_thread = threading.Thread(target=target)
-        self._command_thread.start()
+            self.log_text = output
+            self.last_command_output += output
 
-        # return output
+    @work(exclusive=True, thread=True)
+    async def _restore_default(self) -> None:
+        self.push_screen(ConfirmationScreen("Are you sure you want to restore default configuration?"))
+        # if await self.push_screen_wait(ConfirmationScreen("Do you like Textual?")):
+        #     self.run_command("just list_driver_versions")
 
-    def join_threads(self):
-        if self._command_thread:
-            self._command_thread.join()
 
 if __name__ == "__main__":
     app = ConfigManager()
     app.run()
-    app.join_threads()
