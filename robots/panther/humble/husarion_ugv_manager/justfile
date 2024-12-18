@@ -2,6 +2,10 @@ remote_ip := "10.15.20.2"
 remote_host := "husarion"
 passwd := "husarion"
 
+[private]
+default:
+    @just --list --unsorted
+
 _install_package package:
   #!/bin/bash
   if ! command -v {{package}} &> /dev/null; then
@@ -12,7 +16,7 @@ _install_package package:
   fi
 
 _ssh_command +command:
-  sshpass -p "{{passwd}}" ssh {{remote_host}}@{{remote_ip}} "{{command}}"
+  sshpass -p "{{passwd}}" ssh -o ConnectTimeout=10 {{remote_host}}@{{remote_ip}} "{{command}}"
 
 _install_dependencies:
   @echo "Installing dependencies"
@@ -20,23 +24,24 @@ _install_dependencies:
   just _install_package rsync
 
 init_config: _install_dependencies
-  @echo "Initializing config directory"
+  @echo "Initializing config directory..."
   mkdir -p config
-  sshpass -p "{{passwd}}" rsync -avr {{remote_host}}@{{remote_ip}}:/home/husarion/config/ ./config/
+  sshpass -p "{{passwd}}" rsync -e 'ssh -o ConnectTimeout=10' -avr {{remote_host}}@{{remote_ip}}:/home/husarion/config/ ./config/
 
 update_config:
-  @echo "Updating robot configuration"
-  sshpass -p "{{passwd}}" rsync -avr ./config/ {{remote_host}}@{{remote_ip}}:/home/husarion/config/
+  @echo "Updating robot configuration..."
+  sshpass -p "{{passwd}}" rsync -e 'ssh -o ConnectTimeout=10' -avr ./config/ {{remote_host}}@{{remote_ip}}:/home/husarion/config/
 
 restart_driver:
-  @echo "Restarting driver"
+  @echo "Restarting driver..."
   just _ssh_command "docker compose up --force-recreate -d"
 
 driver_logs *additional_args:
+  @echo "Starting driver logs..."
   just _ssh_command "docker logs husarion_ugv_ros {{additional_args}}"
 
 restore_default mode="soft":
-  @echo "Restoring default robot configuration"
+  @echo "Restoring default robot configuration..."
   {{ if mode == "hard" { "just _hard_reset" } else { "" } }}
   just _ssh_command "docker exec husarion_ugv_ros bash -c 'source /ros2_ws/install/setup.bash && update_config_directory'"
   just init_config
