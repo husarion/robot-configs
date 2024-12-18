@@ -18,8 +18,9 @@ OutputLabel {
     text-align: left;
 }
 
-.hidden {
-    display: none;
+Log {
+    padding: 1 1;
+    margin: 1 1;
 }
 
 ConfirmationScreen {
@@ -28,7 +29,7 @@ ConfirmationScreen {
     content-align: center middle;
 }
 
-#confirmation_grid {
+ConfirmationScreen #grid {
     grid-size: 1 ;
     grid-gutter: 1 1;
     grid-rows: 1fr 1fr;
@@ -37,10 +38,33 @@ ConfirmationScreen {
     height: 10;
     border: thick $background 80%;
     background: $surface;
-    /* align: center top; */
 }
 
-#question {
+ConfirmationScreen #question {
+    /* column-span: 1; */
+    height: 1fr;
+    width: 1fr;
+    content-align: center middle;
+}
+
+SelectionScreen {
+    align: center middle;
+    height: 10;
+    content-align: center middle;
+}
+
+SelectionScreen #grid {
+    grid-size: 1;
+    grid-gutter: 1 1;
+    grid-rows: 1fr 6fr;
+    padding: 0 1;
+    width: 50;
+    height: 20;
+    border: thick $background 80%;
+    background: $surface;
+}
+
+SelectionScreen #title {
     /* column-span: 1; */
     height: 1fr;
     width: 1fr;
