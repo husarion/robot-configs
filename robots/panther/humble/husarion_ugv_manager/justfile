@@ -1,6 +1,5 @@
 remote_ip := "10.15.20.2"
 remote_host := "husarion"
-passwd := "husarion"
 
 _install_package package:
   #!/bin/bash
@@ -12,21 +11,21 @@ _install_package package:
   fi
 
 _ssh_command +command:
-  sshpass -p "{{passwd}}" ssh {{remote_host}}@{{remote_ip}} "{{command}}"
+  ssh {{remote_host}}@{{remote_ip}} "{{command}}"
 
 _install_dependencies:
   @echo "Installing dependencies"
-  just _install_package sshpass
   just _install_package rsync
 
 init_config: _install_dependencies
   @echo "Initializing config directory"
   mkdir -p config
-  sshpass -p "{{passwd}}" rsync -avr {{remote_host}}@{{remote_ip}}:/home/husarion/config/ ./config/
+  ssh-copy-id {{remote_host}}@{{remote_ip}}
+  rsync -avr {{remote_host}}@{{remote_ip}}:/home/husarion/config/ ./config/
 
 update_config:
   @echo "Updating robot configuration"
-  sshpass -p "{{passwd}}" rsync -avr ./config/ {{remote_host}}@{{remote_ip}}:/home/husarion/config/
+  rsync -avr ./config/ {{remote_host}}@{{remote_ip}}:/home/husarion/config/
 
 restart_driver:
   @echo "Restarting driver"
