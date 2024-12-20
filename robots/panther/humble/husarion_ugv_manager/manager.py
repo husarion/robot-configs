@@ -1,4 +1,7 @@
 import os
+import re
+import select
+import subprocess
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer, Grid
@@ -12,14 +15,8 @@ from textual.widgets import (
     ListItem,
     Log,
     OptionList,
-    LoadingIndicator,
 )
-from textual.worker import WorkerState
-
-import subprocess
-import time
-import threading
-import re
+from textual.worker import get_current_worker
 
 
 class CommandHandler(Log):
@@ -29,29 +26,40 @@ class CommandHandler(Log):
         self.write_line(value)
 
     @work(exclusive=True, thread=True)
-    def run_command(self, command) -> None:
+    def run_command(self, command: str) -> None:
+        cmd = command.split(" ")
         process = subprocess.Popen(
-            command,
-            shell=True,
+            cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
         )
 
-        while True:
-            output = process.stdout.readline()
+        while not get_current_worker().is_cancelled:
+            output = ""
+
+            # Use select to check if there is data to read
+            rlist, _, _ = select.select([process.stdout], [], [], 0.5)
+            if process.stdout in rlist:
+                output = process.stdout.readline()
 
             if process.poll() is not None and output == "":
                 break
 
             self.log_text = output
 
-        if process.returncode != 0:
+        if process.returncode != 0 and process.returncode is not None:
             self.log_text = f"Failed to execute command: {command}"
-            for line in process.stderr:
-                self.log_text = line
+            rlist, _, _ = select.select([process.stderr], [], [], 0.5)
+            if process.stderr in rlist:
+                for line in process.stderr:
+                    self.log_text = line
 
         self.log_text = "---"
+        process.terminate()
+
+    def cancel(self):
+        self.workers.cancel_all()
 
 
 class ConfirmationScreen(ModalScreen[bool]):
@@ -107,13 +115,10 @@ class DriverLogsScreen(Screen):
         yield CommandHandler(id="driver_logs")
 
     def on_screen_resume(self):
-        self.log_text = "Driver logs"
         self.query_one(CommandHandler).run_command("just driver_logs -f")
 
     def on_screen_suspend(self):
-        # todo: cancel the worker
-        self.notify("Suspending")
-        # self.workers.cancel_node(DriverLogsScreen)
+        self.query_one(CommandHandler).cancel()
 
 
 class ConfigManager(App):
