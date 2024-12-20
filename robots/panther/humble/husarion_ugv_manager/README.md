@@ -8,7 +8,7 @@ just --list
 
 ## How to start
 
-To initialize the configuration, run:
+To initialize the configuration, run (you will be asked for password, default: husarion):
 
 ```bash
 just init_config
