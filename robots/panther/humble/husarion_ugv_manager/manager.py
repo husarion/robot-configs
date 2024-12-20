@@ -114,6 +114,8 @@ class DriverLogsScreen(Screen):
         yield CommandHandler(id="driver_logs")
 
     def on_screen_resume(self):
+        # TODO: Logging from the last known timestamp, 
+        # to avoid repeating logs every time the screen is resumed
         self.query_one(CommandHandler).run_command("just driver_logs -f")
 
     def on_screen_suspend(self):
@@ -172,6 +174,7 @@ class ConfigManager(App):
         elif id == "driver_logs":
             self.push_screen("driver_logs_screen")
         elif id == "restore_default":
+            # TODO: Add choosing restore mode (soft, hard)
             if await self.push_screen_wait(
                 ConfirmationScreen("Restore default configuration?")
             ):
