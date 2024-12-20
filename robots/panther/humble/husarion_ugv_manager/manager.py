@@ -1,4 +1,5 @@
 import os
+import pty
 import re
 import select
 import subprocess
@@ -22,40 +23,38 @@ from textual.worker import get_current_worker
 class CommandHandler(Log):
     log_text = reactive("")
 
+    def on_mount(self):
+        self.auto_scroll = True
+
     def watch_log_text(self, value: str) -> None:
         self.write_line(value)
 
     @work(exclusive=True, thread=True)
     def run_command(self, command: str) -> None:
+        self.log_text = "---"
+
+        timeout = 0.1
+        master_fd, slave_fd = pty.openpty()
+
         cmd = command.split(" ")
         process = subprocess.Popen(
             cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
+            stdout=slave_fd,
+            stderr=subprocess.STDOUT,
+            close_fds=True,
         )
 
         while not get_current_worker().is_cancelled:
-            output = ""
+            ready, _, _ = select.select([master_fd], [], [], timeout)
+            if ready:
+                data = os.read(master_fd, 512)
+                if not data:
+                    continue
+                self.log_text = data.decode("utf-8")
 
-            # Use select to check if there is data to read
-            rlist, _, _ = select.select([process.stdout], [], [], 0.5)
-            if process.stdout in rlist:
-                output = process.stdout.readline()
-
-            if process.poll() is not None and output == "":
+            if process.poll() is not None:
                 break
 
-            self.log_text = output
-
-        if process.returncode != 0 and process.returncode is not None:
-            self.log_text = f"Failed to execute command: {command}"
-            rlist, _, _ = select.select([process.stderr], [], [], 0.5)
-            if process.stderr in rlist:
-                for line in process.stderr:
-                    self.log_text = line
-
-        self.log_text = "---"
         process.terminate()
 
     def cancel(self):
@@ -127,7 +126,6 @@ class ConfigManager(App):
     BINDINGS = [
         ("q", "quit", "Quit the app"),
         ("d", "toggle_dark", "Toggle dark mode"),
-        ("t", "testing", "Test"),
     ]
     CSS_PATH = os.path.join(os.path.dirname(__file__), "style.tcss")
 
