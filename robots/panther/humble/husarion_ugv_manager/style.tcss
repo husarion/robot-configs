@@ -1,4 +1,16 @@
-ScrollableContainer #command_list{
+#top {
+    height: 50%;
+    width: 100%;
+    layout: horizontal;
+}
+
+#robot_info {
+    height: 100%;
+    width: 20;
+    margin: 1 2;
+}
+
+#command_list{
     overflow: auto;
     align: center top;
 }
@@ -69,4 +81,8 @@ SelectionScreen #title {
     height: 1fr;
     width: 1fr;
     content-align: center middle;
+}
+
+.hidden {
+    display: none;
 }

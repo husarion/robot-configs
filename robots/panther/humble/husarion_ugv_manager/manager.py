@@ -7,7 +7,7 @@ import select
 import subprocess
 from textual import work
 from textual.app import App, ComposeResult
-from textual.containers import ScrollableContainer, Grid
+from textual.containers import Container, ScrollableContainer, Grid
 from textual.reactive import reactive
 from textual.screen import ModalScreen, Screen
 from textual.widgets import (
@@ -116,7 +116,7 @@ class DriverLogsScreen(Screen):
         yield CommandHandler(id="driver_logs")
 
     def on_screen_resume(self):
-        # TODO: Logging from the last known timestamp, 
+        # TODO: Logging from the last known timestamp,
         # to avoid repeating logs every time the screen is resumed
         self.query_one(CommandHandler).run_command("just driver_logs -f")
 
@@ -143,27 +143,31 @@ class ConfigManager(App):
         yield Header()
         yield Footer(id="footer")
 
-        with ScrollableContainer(id="command_list"):
-            yield ListView(
-                ListItem(Label("Update Configuration"), id="update_config"),
-                ListItem(Label("Restart Driver"), id="restart_driver"),
-                ListItem(Label("Driver Logs"), id="driver_logs"),
-                ListItem(Label("Restore Default Configuration"), id="restore_default"),
-                ListItem(Label("List Driver Versions"), id="list_driver_versions"),
-                ListItem(Label("Update Driver Version"), id="update_driver_version"),
-            )
+        with Container(id="top"):
+            with ScrollableContainer(id="command_list"):
+                yield ListView(
+                    ListItem(Label("Update Configuration"), id="update_config"),
+                    ListItem(Label("Restart Driver"), id="restart_driver"),
+                    ListItem(
+                        Label("Show Robot Info", id="show_robot_info_text"), id="show_robot_info"
+                    ),
+                    ListItem(Label("Driver Logs"), id="driver_logs"),
+                    ListItem(Label("Restore Default Configuration"), id="restore_default"),
+                    ListItem(Label("List Driver Versions"), id="list_driver_versions"),
+                    ListItem(Label("Update Driver Version"), id="update_driver_version"),
+                )
+            yield Label(id="robot_info", classes="hidden")
 
         yield CommandHandler(id="output_log")
 
-    def on_mount(self) -> None:
+    async def on_mount(self) -> None:
         self.query_one(ListView).focus()
         self.install_screen(DriverLogsScreen(), "driver_logs_screen")
+        await self._update_robot_info()
 
     def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""
-        self.theme = (
-            "textual-dark" if self.theme == "textual-light" else "textual-light"
-        )
+        self.theme = "textual-dark" if self.theme == "textual-light" else "textual-light"
 
     @work
     async def on_list_view_selected(self, event: ListView.Selected) -> None:
@@ -173,13 +177,20 @@ class ConfigManager(App):
             command_loger.run_command("just update_config")
         elif id == "restart_driver":
             command_loger.run_command("just restart_driver")
+        elif id == "show_robot_info":
+            robot_info = self.query_one("#robot_info")
+            robot_info_text = self.query_one("#show_robot_info_text")
+            if robot_info.has_class("hidden"):
+                robot_info.remove_class("hidden")
+                robot_info_text.update("Hide Robot Info")
+            else:
+                robot_info.add_class("hidden")
+                robot_info_text.update("Show Robot Info")
         elif id == "driver_logs":
             self.push_screen("driver_logs_screen")
         elif id == "restore_default":
             # TODO: Add choosing restore mode (soft, hard)
-            if await self.push_screen_wait(
-                ConfirmationScreen("Restore default configuration?")
-            ):
+            if await self.push_screen_wait(ConfirmationScreen("Restore default configuration?")):
                 command_loger.run_command("just restore_default")
         elif id == "list_driver_versions":
             ros_distro = await self.push_screen_wait(
@@ -207,6 +218,25 @@ class ConfigManager(App):
 
         return output.stdout
 
+    async def _update_robot_info(self) -> None:
+        output = await self.run_command_sync("just robot_info")
+        robot_model = re.search(r"ROBOT_MODEL_NAME=(.+)", output)
+        robot_version = re.search(r"ROBOT_VERSION=(.+)", output)
+        robot_serial_no = re.search(r"ROBOT_SERIAL_NO=(.+)", output)
+
+        robot_model = robot_model.group(1) if robot_model else "----"
+        robot_version = robot_version.group(1) if robot_version else "----"
+        robot_serial_no = robot_serial_no.group(1) if robot_serial_no else "----"
+
+        robot_info_str = (
+            f"Robot Information\n-----------------\n"
+            + f"Model: {robot_model.capitalize()}\n"
+            + f"Version: {robot_version}\n"
+            + f"Serial No: {robot_serial_no}"
+        )
+        robot_info = self.query_one("#robot_info")
+        robot_info.update(robot_info_str)
+
     async def _update_driver_version(self) -> None:
         ros_distro = await self.push_screen_wait(
             SelectionScreen("Choose ROS Distro", ["humble", "jazzy"])
@@ -217,18 +247,12 @@ class ConfigManager(App):
         versions = output.split("\n")
         # filter out the versions, and invert list order
         versions = [
-            version
-            for version in versions[::-1]
-            if re.search(r"\d+\.\d+\.\d+-\d{8}", version)
+            version for version in versions[::-1] if re.search(r"\d+\.\d+\.\d+-\d{8}", version)
         ]
-        version = await self.push_screen_wait(
-            SelectionScreen("Choose version", versions)
-        )
+        version = await self.push_screen_wait(SelectionScreen("Choose version", versions))
 
         if version:
-            self.query_one(CommandHandler).run_command(
-                f"just update_driver_version {version}"
-            )
+            self.query_one(CommandHandler).run_command(f"just update_driver_version {version}")
 
 
 if __name__ == "__main__":

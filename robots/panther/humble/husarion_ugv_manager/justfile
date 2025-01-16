@@ -68,11 +68,21 @@ update_driver_version version:
   echo "Updating driver to version {{version}}"
   just _ssh_command "sed -i 's/\(image: husarion\/panther:\)[^ ]*/\1{{version}}/' /home/husarion/compose.yaml" || exit
 
-  echo "Do you want to restart the driver now? [y/N]"
-  read -r response
-  if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-    just restart_driver
-  fi
+  echo "You should restart the driver to apply changes."
+
+robot_info:
+  #!/bin/bash
+  info=$(just _ssh_command "bash -c -l 'printenv ROBOT_MODEL ROBOT_MODEL_NAME ROBOT_SERIAL_NO ROBOT_VERSION >&3' 3>&1 1>/dev/null 2>&1")
+  echo "$info" | {
+    read -r model
+    read -r model_name
+    read -r serial_no
+    read -r version
+    echo "ROBOT_MODEL=$model"
+    echo "ROBOT_MODEL_NAME=$model_name"
+    echo "ROBOT_SERIAL_NO=$serial_no"
+    echo "ROBOT_VERSION=$version"
+  }
 
 install: init_config
   #!/bin/bash
