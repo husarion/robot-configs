@@ -24,7 +24,7 @@ _install_dependencies:
 init_config: _install_dependencies
   @echo "Initializing config directory..."
   mkdir -p config
-  ssh-copy-id {{remote_host}}@{{remote_ip}}
+  ssh-copy-id -o ConnectTimeout=10 {{remote_host}}@{{remote_ip}}
   rsync -e 'ssh -o ConnectTimeout=10' -avr {{remote_host}}@{{remote_ip}}:/home/husarion/config/ ./config/
 
 update_config:
@@ -66,10 +66,20 @@ update_driver_version version:
     exit 1
   fi
   echo "Updating driver to version {{version}}"
-  just _ssh_command "sed -i 's/\(image: husarion\/panther:\)[^ ]*/\1{{version}}/' /home/husarion/compose.yaml"
+  just _ssh_command "sed -i 's/\(image: husarion\/panther:\)[^ ]*/\1{{version}}/' /home/husarion/compose.yaml" || exit
 
   echo "Do you want to restart the driver now? [y/N]"
   read -r response
   if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
     just restart_driver
   fi
+
+install: init_config
+  #!/bin/bash
+  python3 -m venv .venv
+  source .venv/bin/activate
+  pip3 install -r requirements.txt
+  deactivate
+
+husarion_ugv_manager:
+  ./manager.py
