@@ -1,5 +1,6 @@
 #!./.venv/bin/python3
 
+import datetime
 import os
 import pty
 import re
@@ -132,15 +133,33 @@ class DriverLogsScreen(Screen):
         ("escape", "app.pop_screen", "Back"),
     ]
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._last_log_time = None
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
         yield Footer(id="footer")
+        with Container(id="tools"):
+            yield Button("Refresh", id="refresh")
+            yield Button("Save to file", id="save")
         yield CommandHandler(id="driver_logs")
 
-    def on_screen_resume(self):
+    def on_screen_resume(self) -> None:
+        self._run_logs_command()
+
+    def on_screen_suspend(self) -> None:
+        self._last_log_time = time.time()
+        self.query_one(CommandHandler).cancel()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "refresh":
+            self.query_one(CommandHandler).clear()
+            self._last_log_time = None
+            self._run_logs_command()
+        elif event.button.id == "save":
+            self._save_logs()
+
+    def _run_logs_command(self) -> None:
         command = "just driver_logs -f -n 10000"
         if self._last_log_time:
             time_ms = int((time.time() - self._last_log_time) * 1000)
@@ -148,9 +167,12 @@ class DriverLogsScreen(Screen):
 
         self.query_one(CommandHandler).run_command(command)
 
-    async def on_screen_suspend(self):
-        self._last_log_time = time.time()
-        self.query_one(CommandHandler).cancel()
+    def _save_logs(self) -> None:
+        logs = self.query_one(CommandHandler).lines
+        date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        with open(f"driver-logs-{date}.txt", "w") as file:
+            for line in logs:
+                file.write(line + "\n")
 
 
 class ConfigManager(App):

@@ -39,6 +39,7 @@ ConfirmationScreen {
     align: center middle;
     height: 30;
     content-align: center middle;
+    text-align: center;
 }
 
 ConfirmationScreen #grid {
@@ -48,8 +49,12 @@ ConfirmationScreen #grid {
     padding: 0 1;
     width: 50;
     height: 13;
+    # height: 25h;
+    # height: 25vh;
+    # height: 15vw;
     border: thick $background 80%;
     background: $surface;
+    text-align: center;
 }
 
 ConfirmationScreen #question {
@@ -82,6 +87,19 @@ SelectionScreen #title {
     height: 1fr;
     width: 1fr;
     content-align: center middle;
+}
+
+DriverLogsScreen #tools {
+    height: 3;
+    width: 100%;
+    layout: horizontal;
+    margin: 1 0;
+}
+
+DriverLogsScreen Button {
+    height: 100%;
+    width: 15;
+    margin: 0 1;
 }
 
 .hidden {
