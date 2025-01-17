@@ -37,7 +37,7 @@ Log {
 
 ConfirmationScreen {
     align: center middle;
-    height: 10;
+    height: 30;
     content-align: center middle;
 }
 
@@ -47,7 +47,7 @@ ConfirmationScreen #grid {
     grid-rows: 1fr 1fr;
     padding: 0 1;
     width: 50;
-    height: 10;
+    height: 13;
     border: thick $background 80%;
     background: $surface;
 }
@@ -57,6 +57,7 @@ ConfirmationScreen #question {
     height: 1fr;
     width: 1fr;
     content-align: center middle;
+    text-align: center;
 }
 
 SelectionScreen {

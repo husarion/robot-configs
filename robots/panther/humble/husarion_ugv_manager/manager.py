@@ -5,6 +5,7 @@ import pty
 import re
 import select
 import subprocess
+import time
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, ScrollableContainer, Grid
@@ -18,6 +19,7 @@ from textual.widgets import (
     ListItem,
     Log,
     OptionList,
+    Button,
 )
 from textual.worker import get_current_worker
 
@@ -33,6 +35,10 @@ class CommandHandler(Log):
 
     @work(exclusive=True, thread=True)
     def run_command(self, command: str) -> None:
+        """
+        Run command in separate thread and log the output in realtime.
+        """
+
         self.log_text = "---"
 
         timeout = 0.1
@@ -49,7 +55,7 @@ class CommandHandler(Log):
         while not get_current_worker().is_cancelled:
             ready, _, _ = select.select([master_fd], [], [], timeout)
             if ready:
-                data = os.read(master_fd, 512)
+                data = os.read(master_fd, 1024)
                 if not data:
                     continue
                 self.log_text = data.decode("utf-8")
@@ -58,6 +64,21 @@ class CommandHandler(Log):
                 break
 
         process.terminate()
+
+    async def run_command_wait(self, command) -> str:
+        """
+        Run command and wait fot the output. Return the output.
+        """
+
+        output = subprocess.run(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+
+        return output.stdout
 
     def cancel(self):
         self.workers.cancel_all()
@@ -111,16 +132,24 @@ class DriverLogsScreen(Screen):
         ("escape", "app.pop_screen", "Back"),
     ]
 
+    def __init__(self):
+        super().__init__()
+        self._last_log_time = None
+
     def compose(self):
         yield Footer(id="footer")
         yield CommandHandler(id="driver_logs")
 
     def on_screen_resume(self):
-        # TODO: Logging from the last known timestamp,
-        # to avoid repeating logs every time the screen is resumed
-        self.query_one(CommandHandler).run_command("just driver_logs -f")
+        command = "just driver_logs -f -n 10000"
+        if self._last_log_time:
+            time_ms = int((time.time() - self._last_log_time) * 1000)
+            command += f" --since {time_ms}ms"
 
-    def on_screen_suspend(self):
+        self.query_one(CommandHandler).run_command(command)
+
+    async def on_screen_suspend(self):
+        self._last_log_time = time.time()
         self.query_one(CommandHandler).cancel()
 
 
@@ -189,9 +218,7 @@ class ConfigManager(App):
         elif id == "driver_logs":
             self.push_screen("driver_logs_screen")
         elif id == "restore_default":
-            # TODO: Add choosing restore mode (soft, hard)
-            if await self.push_screen_wait(ConfirmationScreen("Restore default configuration?")):
-                command_loger.run_command("just restore_default")
+            await self._restore_default()
         elif id == "list_driver_versions":
             ros_distro = await self.push_screen_wait(
                 SelectionScreen("Choose ROS Distro", ["humble", "jazzy"])
@@ -207,19 +234,8 @@ class ConfigManager(App):
         log = self.query_one(Log)
         log.write_line(value)
 
-    async def run_command_sync(self, command) -> str:
-        output = subprocess.run(
-            command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-
-        return output.stdout
-
     async def _update_robot_info(self) -> None:
-        output = await self.run_command_sync("just robot_info")
+        output = await self.query_one(CommandHandler).run_command_wait("just robot_info")
         robot_model = re.search(r"ROBOT_MODEL_NAME=(.+)", output)
         robot_version = re.search(r"ROBOT_VERSION=(.+)", output)
         robot_serial_no = re.search(r"ROBOT_SERIAL_NO=(.+)", output)
@@ -237,12 +253,34 @@ class ConfigManager(App):
         robot_info = self.query_one("#robot_info")
         robot_info.update(robot_info_str)
 
+    async def _restore_default(self) -> None:
+        option = await self.push_screen_wait(
+            SelectionScreen("Choose restore mode", ["soft", "hard"])
+        )
+
+        confirmation_msg = (
+            "This operation may override changes made in the 'config' directory.\n"
+            "Are you sure you want to continue?"
+        )
+        command = "just restore_default " + option
+        if option == "hard":
+            confirmation_msg = (
+                "Restoring configuration in 'hard' mode will completely erase all files from the "
+                "'config' directory except for ones in 'common' subdirectory.\n"
+                "Are you sure you want to continue?"
+            )
+
+        if await self.push_screen_wait(ConfirmationScreen(confirmation_msg)):
+            self.query_one(CommandHandler).run_command(command)
+
     async def _update_driver_version(self) -> None:
         ros_distro = await self.push_screen_wait(
             SelectionScreen("Choose ROS Distro", ["humble", "jazzy"])
         )
 
-        output = await self.run_command_sync(f"just list_driver_versions {ros_distro}")
+        output = await self.query_one(CommandHandler).run_command_wait(
+            f"just list_driver_versions {ros_distro}"
+        )
 
         versions = output.split("\n")
         # filter out the versions, and invert list order
