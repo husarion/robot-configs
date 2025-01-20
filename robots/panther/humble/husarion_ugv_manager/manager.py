@@ -7,12 +7,14 @@ import re
 import select
 import subprocess
 import time
+
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, ScrollableContainer, Grid
 from textual.reactive import reactive
 from textual.screen import ModalScreen, Screen
 from textual.widgets import (
+    Button,
     Footer,
     Header,
     Label,
@@ -20,7 +22,6 @@ from textual.widgets import (
     ListItem,
     Log,
     OptionList,
-    Button,
 )
 from textual.worker import get_current_worker
 
@@ -107,10 +108,10 @@ class SelectionScreen(ModalScreen[str]):
         ("escape", "app.pop_screen", "Return to the previous screen"),
     ]
 
-    def __init__(self, list_title, version_list: list[str]) -> None:
+    def __init__(self, list_title, options: list[str]) -> None:
         super().__init__()
         self._list_title = list_title
-        self._version_list = version_list
+        self._options = options
 
     def compose(self) -> ComposeResult:
         with Grid(id="grid"):
@@ -119,8 +120,8 @@ class SelectionScreen(ModalScreen[str]):
 
     def on_mount(self) -> None:
         option_list = self.query_one(OptionList)
-        for version in self._version_list:
-            option_list.add_option(version)
+        for option in self._options:
+            option_list.add_option(option)
 
         option_list.focus()
 
