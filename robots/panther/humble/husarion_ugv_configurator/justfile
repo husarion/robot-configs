@@ -91,5 +91,5 @@ install: init_config
   pip3 install -r requirements.txt
   deactivate
 
-husarion_ugv_manager:
-  ./manager.py
+husarion_ugv_configurator:
+  ./configurator.py

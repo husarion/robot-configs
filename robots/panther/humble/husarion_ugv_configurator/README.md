@@ -1,4 +1,4 @@
-# husarion_ugv_manager
+# husarion_ugv_configurator
 
 ## Installation
 
@@ -8,15 +8,15 @@ Simply run:
 just install
 ```
 
-## Running Husarion UGV Manager TUI
+## Running Husarion UGV Configurator TUI
 
 ```bash
-just husarion_ugv_manager
+just husarion_ugv_configurator
 ```
 
 ## Using standalone `just` commands
 
-Suggested way of using the manager is with the `husarion_ugv_manager` application. This section describes some of the available `just` that are used by the application, but can be also used as a standalone commands.
+Suggested way of using the configurator is with the `husarion_ugv_configurator` application. This section describes some of the available `just` that are used by the application, but can be also used as a standalone commands.
 
 You can list all available commands with:
 

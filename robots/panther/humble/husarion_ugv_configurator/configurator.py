@@ -176,7 +176,7 @@ class DriverLogsScreen(Screen):
                 file.write(line + "\n")
 
 
-class ConfigManager(App):
+class Configurator(App):
     """A Textual app to manage Husarion UGV robot."""
 
     BINDINGS = [
@@ -317,5 +317,5 @@ class ConfigManager(App):
 
 
 if __name__ == "__main__":
-    app = ConfigManager()
+    app = Configurator()
     app.run()
