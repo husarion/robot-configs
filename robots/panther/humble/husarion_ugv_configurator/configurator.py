@@ -65,7 +65,7 @@ class CommandHandler(Log):
             if process.poll() is not None:
                 break
 
-        process.terminate()
+        process.kill()
 
     async def run_command_wait(self, command) -> str:
         """
@@ -161,7 +161,13 @@ class DriverLogsScreen(Screen):
             self._save_logs()
 
     def _run_logs_command(self) -> None:
-        command = "just driver_logs -f -n 10000"
+        # FIXME: passing the command directly until someone figures out why calling it 
+        # with 'just' makes it impossible to terminate the process in a CommandHandler.
+        # Happens only if using `-f` flag and there are no logs to show.
+        # command = "just driver_logs -f -n 10000"
+        command = (
+            "ssh -o ConnectTimeout=10 husarion@10.15.20.2 docker logs husarion_ugv_ros -f -n 10000"
+        )
         if self._last_log_time:
             time_ms = int((time.time() - self._last_log_time) * 1000)
             command += f" --since {time_ms}ms"
