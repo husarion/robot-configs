@@ -1,4 +1,22 @@
-# husarion_ugv_manager
+# husarion_ugv_configurator
+
+## Installation
+
+Simply run:
+
+```bash
+just install
+```
+
+## Running Husarion UGV Configurator TUI
+
+```bash
+just husarion_ugv_configurator
+```
+
+## Using standalone `just` commands
+
+Suggested way of using the configurator is with the `husarion_ugv_configurator` application. This section describes some of the available `just` that are used by the application, but can be also used as a standalone commands.
 
 You can list all available commands with:
 
@@ -6,7 +24,7 @@ You can list all available commands with:
 just --list
 ```
 
-## How to start
+### Initializing configuration
 
 To initialize the configuration, run (you will be asked for password, default: husarion):
 
@@ -14,7 +32,7 @@ To initialize the configuration, run (you will be asked for password, default: h
 just init_config
 ```
 
-## Modifying configuration
+### Modifying configuration
 
 Edit files inside the `config` directory, then apply changes to the driver.
 
@@ -40,7 +58,7 @@ just restore_default hard
 ::Warning::
 > This will completely erase all data from the `config` directory except for files located in the `config/common` subdirectory.
 
-## Update driver version
+### Update driver version
 
 List available stable driver versions:
 
@@ -58,7 +76,7 @@ just update_driver_version <tag>
 just update_driver_version humble-2.1.2-20241125
 ```
 
-## Debug driver
+### Debug driver
 
 Logs from the driver can be seen using following command:
 
