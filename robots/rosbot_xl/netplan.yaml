@@ -6,7 +6,7 @@ network:
 
     all-eths:
       match:
-        name: eth*
+        name: eth*|enP8p1s*
       dhcp4: no
       dhcp6: no
       optional: true
