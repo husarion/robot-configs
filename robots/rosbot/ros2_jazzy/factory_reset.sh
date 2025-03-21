@@ -58,8 +58,8 @@ sudo snap set husarion-depthai driver.parent-frame=camera_link
 
 echo "---------------------------------------"
 echo "Setting up the \"husarion-webui\" snap"
-sudo cp foxglove-rosbot3.json /var/snap/husarion-webui/common/
-sudo snap set husarion-webui webui.layout=rosbot3
+sudo cp foxglove-rosbot.json /var/snap/husarion-webui/common/
+sudo snap set husarion-webui webui.layout=rosbot
 
 echo "---------------------------------------"
 echo "Default DDS params on host"
