@@ -1,13 +1,20 @@
 #!/bin/bash
 
+# Export environment variables from the hos t
+if [ -f /etc/environment ]; then
+  set -a
+  source /etc/environment
+  set +a
+fi
+
 ### Check if running with root privileges ###
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
-   exit 1
+  echo "This script must be run as root" 
+  exit 1
 fi
 
 ### Resize Partition ###
-echo "Resizing the file system"
+echo "Resizing the file system..."
 
 root_device=/dev/$(lsblk -no PKNAME,MOUNTPOINT | awk '$2 == "/" {print $1}')
 partition_suffix=$(lsblk -no KNAME,MOUNTPOINT | awk '$2 == "/" {gsub(/.*[^0-9]/, "", $1); print $1}')
@@ -31,13 +38,16 @@ fi
 
 echo "Robot model: ${robot_model}"
 
-# echo "ROS version: ${ros_version}"
-cp -rp /etc/husarion/robot_configs/${robot_model}/${ros_version}/* /home/husarion
-dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb
-cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
+$(dirname "$0")/robots/${robot_model}/custom_config.sh
+
+cp -rp $(dirname "$0")/robots/${robot_model}/${ROS_DISTRO}/* /home/husarion
+dpkg -i $(dirname "$0")/robots/${robot_model}/motd_$(uname -m).deb
+cp $(dirname "$0")/robots/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
 bash /usr/lib/husarion/custom_config_${robot_model}.sh
 
-mkdir /home/husarion/.ros
+if [ ! -d /home/husarion/.ros ]; then
+  mkdir /home/husarion/.ros
+fi
 chown husarion:husarion /home/husarion/.ros
 
 sudo chmod 600 /etc/netplan/01-network-manager-all.yaml

@@ -2,7 +2,7 @@
 
 # If a particular robot requires any extra custom configuration steps, they should be included in this file.
 
-CONFIG_FILES_PATH="/etc/husarion/robot_configs/panther"
+CONFIG_FILES_PATH="/etc/husarion/robot_configs/husarion_ugv"
 
 # Time server config
 cp ${CONFIG_FILES_PATH}/files/chrony.conf /etc/chrony/chrony.conf
