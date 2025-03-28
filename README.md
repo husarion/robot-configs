@@ -7,7 +7,9 @@ Basic Husarion robots configs for Husarion OS
 ```bash
 cd /opt
 sudo git clone https://github.com/husarion/robot-configs
-sudo echo "PATH=$PATH:/opt/robot-configs" > ~/.bashrc
+sudo ln -s /opt/robot-configs/setup_robot_configuration /usr/local/bin/setup_robot_configuration
+# sudo echo "export PATH=$PATH:/opt/robot-configs" >> ~/.bashrc
+# sudo bash -c "echo 'export PATH=$PATH:/opt/robot-configs' >> /root/.bashrc"
 ```
 
 ## Using

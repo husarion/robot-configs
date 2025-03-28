@@ -69,7 +69,8 @@ echo "ROS version: ${ros_version}"
 # ========================================
 
 # Get the directory where the script itself is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # this one does not work with simlinks
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 
 if [ -z "$1" ]; then
   echo ""
