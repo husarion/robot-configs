@@ -6,7 +6,6 @@ network:
     all-eths:
       match:
         name: eth*
-      set-name: mynet
       dhcp4: no
       dhcp6: no
       optional: true
@@ -16,7 +15,6 @@ network:
     all-enps:
       match:
         name: enP8p1s*
-      set-name: mynet
       dhcp4: no
       dhcp6: no
       optional: true
