@@ -3,10 +3,20 @@ network:
   renderer: NetworkManager
 
   ethernets:
-
     all-eths:
       match:
-        name: eth*|enP8p1s*
+        name: eth*
+      set-name: mynet
+      dhcp4: no
+      dhcp6: no
+      optional: true
+      addresses:
+        - 192.168.77.2/24
+
+    all-enps:
+      match:
+        name: enP8p1s*
+      set-name: mynet
       dhcp4: no
       dhcp6: no
       optional: true
