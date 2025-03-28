@@ -41,6 +41,9 @@ for snap in "${SNAP_EDGE_LIST[@]}"; do
         ros.localhost-only='' \
         ros.domain-id=0 \
         ros.namespace=''
+
+    # disable auto-refresh (auto update)
+    sudo snap refresh --hold=forever $snap
 done
 
 SNAP_LIST=( ${SNAP_LIST[@]/rosbot} )
@@ -56,6 +59,9 @@ for snap in "${SNAP_LIST[@]}"; do
         ros.localhost-only='' \
         ros.domain-id=0 \
         ros.namespace=''
+
+    # disable auto-refresh (auto update)
+    sudo snap refresh --hold=forever $snap
 done
 
 SNAP_LIST+=("rosbot")
