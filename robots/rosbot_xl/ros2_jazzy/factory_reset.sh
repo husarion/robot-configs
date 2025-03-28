@@ -27,11 +27,24 @@ for snap in "${SNAP_LIST[@]}"; do
 done
 
 # temporarly rosbot snap is installed form edge
-SNAP_LIST=( ${SNAP_LIST[@]/rosbot} )
+SNAP_EDGE_LIST=(
+    rosbot
+    husarion-webui
+)
+for snap in "${SNAP_EDGE_LIST[@]}"; do
+    echo "---------------------------------------"
+    echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO)/edge"
+    sudo snap install "$snap" --channel="$ROS_DISTRO"/edge
+    sudo "$snap".stop
+    sudo snap set "$snap" \
+        ros.transport=udp-lo \
+        ros.localhost-only='' \
+        ros.domain-id=0 \
+        ros.namespace=''
+done
 
-echo "---------------------------------------"
-echo "Installing the \"rosbot\" snap (ROS 2 $ROS_DISTRO/edge)"
-sudo snap install rosbot --channel=$ROS_DISTRO/edge
+SNAP_LIST=( ${SNAP_LIST[@]/rosbot} )
+SNAP_LIST=( ${SNAP_LIST[@]/husarion-webui} )
 
 for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
@@ -46,6 +59,7 @@ for snap in "${SNAP_LIST[@]}"; do
 done
 
 SNAP_LIST+=("rosbot")
+SNAP_LIST+=("husarion-webui")
 
 echo "---------------------------------------"
 echo "Setting up the \"rosbot\" snap"
@@ -67,7 +81,7 @@ sudo husarion-depthai.stop
 
 echo "---------------------------------------"
 echo "Setting up the \"husarion-webui\" snap"
-sudo mv foxglove-rosbot-xl.json /var/snap/husarion-webui/common/
+sudo mv /home/husarion/foxglove-rosbot-xl.json /var/snap/husarion-webui/common/
 sudo snap set husarion-webui webui.layout=rosbot-xl
 
 echo "---------------------------------------"
