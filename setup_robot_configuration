@@ -97,9 +97,33 @@ else
   echo "Robot model: ${robot_model}"
 
   cp -rp $SCRIPT_DIR/robots/${robot_model}/${ros_version}/* /home/husarion
-  dpkg -i $SCRIPT_DIR/robots/${robot_model}/motd_$(uname -m).deb
   cp $SCRIPT_DIR/robots/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
   bash $SCRIPT_DIR/robots/${robot_model}/custom_config.sh
+
+  ## install motd
+  ARCH=$(uname -m)
+
+  # Map uname -m to .deb architecture
+  if [[ "$ARCH" == "x86_64" ]]; then
+    DEB_ARCH="amd64"
+  elif [[ "$ARCH" == "aarch64" ]]; then
+    DEB_ARCH="arm64"
+  else
+    echo "Unsupported architecture: $ARCH"
+    exit 1
+  fi
+
+  # Look for the matching .deb file using a regex pattern
+  DEB_FILE=$(find "$SCRIPT_DIR/robots/${robot_model}" -maxdepth 1 -type f -regex ".*husarion-motd-.*-${DEB_ARCH}\.deb" | head -n 1)
+
+  if [[ -z "$DEB_FILE" ]]; then
+    echo "Error: No matching .deb file found for architecture: $DEB_ARCH"
+    exit 1
+  fi
+
+  echo "Installing motd package: $DEB_FILE"
+  # Install the package
+  sudo dpkg -i "$DEB_FILE"
 fi
 
 # mkdir /home/husarion/.ros
