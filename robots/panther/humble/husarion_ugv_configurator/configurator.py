@@ -60,7 +60,7 @@ class CommandHandler(Log):
                 data = os.read(master_fd, 1024)
                 if not data:
                     continue
-                self.log_text = data.decode("utf-8")
+                self.log_text = data.decode("utf-8").strip()
 
             if process.poll() is not None:
                 break
@@ -161,13 +161,7 @@ class DriverLogsScreen(Screen):
             self._save_logs()
 
     def _run_logs_command(self) -> None:
-        # FIXME: passing the command directly until someone figures out why calling it 
-        # with 'just' makes it impossible to terminate the process in a CommandHandler.
-        # Happens only if using `-f` flag and there are no logs to show.
-        # command = "just driver_logs -f -n 10000"
-        command = (
-            "ssh -o ConnectTimeout=10 husarion@10.15.20.2 docker logs husarion_ugv_ros -f -n 10000"
-        )
+        command = "just driver_logs -f -n 10000"
         if self._last_log_time:
             time_ms = int((time.time() - self._last_log_time) * 1000)
             command += f" --since {time_ms}ms"
@@ -179,7 +173,8 @@ class DriverLogsScreen(Screen):
         date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         with open(f"driver-logs-{date}.txt", "w") as file:
             for line in logs:
-                file.write(line + "\n")
+                if line.strip():
+                    file.write(line + "\n")
 
 
 class Configurator(App):
@@ -207,7 +202,8 @@ class Configurator(App):
                     ListItem(Label("Update Configuration"), id="update_config"),
                     ListItem(Label("Restart Driver"), id="restart_driver"),
                     ListItem(
-                        Label("Show Robot Info", id="show_robot_info_text"), id="show_robot_info"
+                        Label("Show Robot Info", id="show_robot_info_text"),
+                        id="show_robot_info",
                     ),
                     ListItem(Label("Driver Logs"), id="driver_logs"),
                     ListItem(Label("Restore Default Configuration"), id="restore_default"),
