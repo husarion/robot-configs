@@ -6,6 +6,10 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+echo "---------------------------------------"
+echo "Starting the configuration script"
+echo "---------------------------------------"
+
 # resize fs
 echo "Resizing the file system"
 
@@ -98,7 +102,6 @@ else
   echo "Robot model: ${robot_model}"
 
   cp -rp $SCRIPT_DIR/robots/${robot_model}/${ros_version}/* /home/husarion
-  cp $SCRIPT_DIR/robots/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
   bash $SCRIPT_DIR/robots/${robot_model}/custom_config.sh
 
   ## install motd
@@ -130,9 +133,12 @@ fi
 # mkdir /home/husarion/.ros
 # chown husarion:husarion /home/husarion/.ros
 
+echo "Resetting the network configuration"
+cp $SCRIPT_DIR/robots/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
 sudo chmod 600 /etc/netplan/01-network-manager-all.yaml
 
 # Generating new SSH credentials
+echo "Generating new SSH credentials"
 sudo echo "" > /root/.ssh/authorized_keys
 sudo echo "" > /root/.ssh/known_hosts
 sudo echo "" > /home/husarion/.ssh/authorized_keys

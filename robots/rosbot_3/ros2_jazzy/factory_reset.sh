@@ -14,11 +14,12 @@ SNAP_LIST=(
 )
 
 ROS_DISTRO=${ROS_DISTRO:-humble}
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 
 start_time=$(date +%s)
 
-/var/snap/rosbot/common/manage_ros_env.sh remove
-sudo /var/snap/rosbot/common/manage_ros_env.sh remove
+# /var/snap/rosbot/common/manage_ros_env.sh remove
+# sudo /var/snap/rosbot/common/manage_ros_env.sh remove
 
 for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
@@ -29,22 +30,23 @@ done
 for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
     echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO)"
-    sudo snap install "$snap" --channel="$ROS_DISTRO"
+    sudo snap install "$snap" --channel="$ROS_DISTRO/edge"
     sudo "$snap".stop
     sudo snap set "$snap" \
         ros.transport=udp-lo \
         ros.localhost-only='' \
         ros.domain-id=0 \
         ros.namespace=''
+
+    # disable auto-refresh (auto update)
+    sudo snap refresh --hold=forever $snap
 done
 
 echo "---------------------------------------"
 echo "Setting up the \"rosbot\" snap"
-sudo snap connect rosbot:shm-plug rosbot:shm-slot
 sudo /var/snap/rosbot/common/post_install.sh
-sudo rosbot.stop
-sleep 2
 sudo rosbot.flash
+sudo snap set rosbot driver.robot-model=rosbot
 
 echo "---------------------------------------"
 echo "Setting up the \"husarion-rplidar\" snap"
@@ -54,11 +56,11 @@ sudo snap set husarion-rplidar configuration=s2
 echo "---------------------------------------"
 echo "Setting up the \"husarion-depthai\" snap"
 sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
-sudo snap set husarion-depthai driver.parent-frame=camera_link
+sudo snap set husarion-depthai driver.parent-frame=camera_mount_link
 
 echo "---------------------------------------"
 echo "Setting up the \"husarion-webui\" snap"
-sudo cp foxglove-rosbot3.json /var/snap/husarion-webui/common/
+sudo cp $SCRIPT_DIR/foxglove-rosbot3.json /var/snap/husarion-webui/common/
 sudo snap set husarion-webui webui.layout=rosbot3
 
 echo "---------------------------------------"

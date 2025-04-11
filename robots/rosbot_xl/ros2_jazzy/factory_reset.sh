@@ -8,12 +8,11 @@ fi
 
 SNAP_LIST=(
     rosbot
-    husarion-rplidar
-    husarion-depthai
     husarion-webui
 )
 
 ROS_DISTRO=${ROS_DISTRO:-humble}
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 
 start_time=$(date +%s)
 
@@ -26,12 +25,7 @@ for snap in "${SNAP_LIST[@]}"; do
     sudo snap remove "$snap" 
 done
 
-# temporarly rosbot snap is installed form edge
-SNAP_EDGE_LIST=(
-    rosbot
-    husarion-webui
-)
-for snap in "${SNAP_EDGE_LIST[@]}"; do
+for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
     echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO)/edge"
     sudo snap install "$snap" --channel="$ROS_DISTRO"/edge
@@ -46,27 +40,6 @@ for snap in "${SNAP_EDGE_LIST[@]}"; do
     sudo snap refresh --hold=forever $snap
 done
 
-SNAP_LIST=( ${SNAP_LIST[@]/rosbot} )
-SNAP_LIST=( ${SNAP_LIST[@]/husarion-webui} )
-
-for snap in "${SNAP_LIST[@]}"; do
-    echo "---------------------------------------"
-    echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO)"
-    sudo snap install "$snap" --channel="$ROS_DISTRO"
-    sudo "$snap".stop
-    sudo snap set "$snap" \
-        ros.transport=udp-lo \
-        ros.localhost-only='' \
-        ros.domain-id=0 \
-        ros.namespace=''
-
-    # disable auto-refresh (auto update)
-    sudo snap refresh --hold=forever $snap
-done
-
-SNAP_LIST+=("rosbot")
-SNAP_LIST+=("husarion-webui")
-
 echo "---------------------------------------"
 echo "Setting up the \"rosbot\" snap"
 sudo /var/snap/rosbot/common/post_install.sh
@@ -74,20 +47,8 @@ sudo snap set rosbot driver.robot-model=rosbot-xl
 sudo rosbot.flash
 
 echo "---------------------------------------"
-echo "Setting up the \"husarion-rplidar\" snap"
-sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
-sudo snap set husarion-rplidar configuration=s2
-sudo husarion-rplidar.stop
-
-echo "---------------------------------------"
-echo "Setting up the \"husarion-depthai\" snap"
-sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
-sudo snap set husarion-depthai driver.parent-frame=camera_link
-sudo husarion-depthai.stop
-
-echo "---------------------------------------"
 echo "Setting up the \"husarion-webui\" snap"
-sudo mv /home/husarion/foxglove-rosbot-xl.json /var/snap/husarion-webui/common/
+sudo cp $SCRIPT_DIR/foxglove-rosbot3.json /var/snap/husarion-webui/common/
 sudo snap set husarion-webui webui.layout=rosbot-xl
 
 echo "---------------------------------------"
@@ -95,9 +56,9 @@ echo "Default DDS params on host"
 /var/snap/rosbot/common/manage_ros_env.sh
 sudo /var/snap/rosbot/common/manage_ros_env.sh
 
-# Remove specific snaps
-SNAP_LIST=( ${SNAP_LIST[@]/husarion-rplidar} )
-SNAP_LIST=( ${SNAP_LIST[@]/husarion-depthai} )
+# # Remove specific snaps
+# SNAP_LIST=( ${SNAP_LIST[@]/husarion-rplidar} )
+# SNAP_LIST=( ${SNAP_LIST[@]/husarion-depthai} )
 echo "---------------------------------------"
 echo "Starting the following snaps: ${SNAP_LIST[*]}"
 
