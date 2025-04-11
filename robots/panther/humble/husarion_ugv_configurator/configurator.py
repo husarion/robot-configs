@@ -8,11 +8,13 @@ import select
 import subprocess
 import time
 
+from rich.text import Text
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, ScrollableContainer, Grid
 from textual.reactive import reactive
 from textual.screen import ModalScreen, Screen
+from textual.theme import Theme
 from textual.widgets import (
     Button,
     Footer,
@@ -24,6 +26,31 @@ from textual.widgets import (
     OptionList,
 )
 from textual.worker import get_current_worker
+
+RUBY_RED = "#D01D37"
+GREY = "#242526"
+DARK_GREY = "#1B1B1D"
+LIGHT_GREY = "#EFEFEF"
+ANTRACITE = "#2F303B"
+WHITE = "#FFFFFF"
+
+husarion_dark_theme = Theme(
+    name="husarion-dark",
+    primary=RUBY_RED,
+    foreground=WHITE,
+    background=DARK_GREY,
+    surface=GREY,
+    dark=True,
+)
+
+husarion_light_theme = Theme(
+    name="husarion-light",
+    primary=RUBY_RED,
+    foreground=ANTRACITE,
+    background=WHITE,
+    surface=LIGHT_GREY,
+    dark=False,
+)
 
 
 class CommandHandler(Log):
@@ -129,6 +156,14 @@ class SelectionScreen(ModalScreen[str]):
         self.dismiss(event.option.prompt)
 
 
+class CustomButton(Button):
+    def on_focus(self) -> None:
+        self.variant = "primary"
+
+    def on_blur(self) -> None:
+        self.variant = "default"
+
+
 class DriverLogsScreen(Screen):
     BINDINGS = [
         ("escape", "app.pop_screen", "Back"),
@@ -141,8 +176,8 @@ class DriverLogsScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Footer(id="footer")
         with Container(id="tools"):
-            yield Button("Refresh", id="refresh")
-            yield Button("Save to file", id="save")
+            yield CustomButton("Refresh", id="refresh", variant="primary")
+            yield CustomButton("Save to file", id="save")
         yield CommandHandler(id="driver_logs")
 
     def on_screen_resume(self) -> None:
@@ -193,7 +228,7 @@ class Configurator(App):
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
-        yield Header()
+        yield Header(id="header")
         yield Footer(id="footer")
 
         with Container(id="top"):
@@ -215,13 +250,17 @@ class Configurator(App):
         yield CommandHandler(id="output_log")
 
     async def on_mount(self) -> None:
+        self.register_theme(husarion_dark_theme)
+        self.register_theme(husarion_light_theme)
+        self.theme = "husarion-dark"
+        self.title = "Husarion UGV Configurator"
         self.query_one(ListView).focus()
         self.install_screen(DriverLogsScreen(), "driver_logs_screen")
         await self._update_robot_info()
 
     def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""
-        self.theme = "textual-dark" if self.theme == "textual-light" else "textual-light"
+        self.theme = "husarion-light" if self.theme == "husarion-dark" else "husarion-dark"
 
     @work
     async def on_list_view_selected(self, event: ListView.Selected) -> None:
@@ -269,12 +308,15 @@ class Configurator(App):
         robot_version = robot_version.group(1) if robot_version else "----"
         robot_serial_no = robot_serial_no.group(1) if robot_serial_no else "----"
 
-        robot_info_str = (
-            f"Robot Information\n-----------------\n"
-            + f"Model: {robot_model.capitalize()}\n"
-            + f"Version: {robot_version}\n"
-            + f"Serial No: {robot_serial_no}"
-        )
+        robot_info_str = Text()
+        robot_info_str.append("Robot Information\n", style="bold")
+        robot_info_str.append("-----------------\n")
+        robot_info_str.append("Model: ", style="bold")
+        robot_info_str.append(f"{robot_model.capitalize()}\n")
+        robot_info_str.append("Version: ", style="bold")
+        robot_info_str.append(f"{robot_version}\n")
+        robot_info_str.append("Serial No: ", style="bold")
+        robot_info_str.append(f"{robot_serial_no}")
         robot_info = self.query_one("#robot_info")
         robot_info.update(robot_info_str)
 
