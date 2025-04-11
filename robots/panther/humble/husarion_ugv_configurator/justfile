@@ -15,7 +15,7 @@ _install_package package:
   fi
 
 _ssh_command +command:
-  ssh -o ConnectTimeout=10 {{remote_host}}@{{remote_ip}} "{{command}}"
+  ssh -o ConnectTimeout=10 -n {{remote_host}}@{{remote_ip}} "{{command}}"
 
 _install_dependencies:
   @echo "Installing dependencies"
@@ -52,7 +52,7 @@ _hard_reset:
 
 list_driver_versions ros_distro="humble":
   @echo "Listing available driver versions"
-  wget -q -O - "https://hub.docker.com/v2/namespaces/husarion/repositories/panther/tags?page_size=100" | \
+  wget -q -O - "https://hub.docker.com/v2/namespaces/husarion/repositories/husarion-ugv/tags?page_size=100" | \
   grep -o '"name": *"[^"]*' | \
   grep -o '[^"]*$' | \
   grep "{{ros_distro}}-[0-9]*\.[0-9]*\.[0-9]-[0-9]\{8\}" | \
@@ -66,7 +66,7 @@ update_driver_version version:
     exit 1
   fi
   echo "Updating driver to version {{version}}"
-  just _ssh_command "sed -i 's/\(image: husarion\/panther:\)[^ ]*/\1{{version}}/' /home/husarion/compose.yaml" || exit
+  just _ssh_command "sed -i 's/\(image: husarion\/husarion-ugv:\)[^ ]*/\1{{version}}/' /home/husarion/compose.yaml" || exit
 
   echo "You should restart the driver to apply changes."
 
