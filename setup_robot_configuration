@@ -101,7 +101,7 @@ else
 
   echo "Robot model: ${robot_model}"
 
-  cp -rp $SCRIPT_DIR/robots/${robot_model}/${ros_version}/* /home/husarion
+  [ -d $SCRIPT_DIR/robots/${robot_model}/${ros_version} ] && cp -rp $SCRIPT_DIR/robots/${robot_model}/${ros_version}/* /home/husarion
   bash $SCRIPT_DIR/robots/${robot_model}/custom_config.sh
 
   ## install motd
