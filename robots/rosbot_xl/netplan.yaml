@@ -3,7 +3,6 @@ network:
   renderer: NetworkManager
 
   ethernets:
-
     all-eths:
       match:
         name: eth*
@@ -19,7 +18,9 @@ network:
       dhcp4: no
       dhcp6: no
       optional: true
-
+      addresses:
+        - 192.168.77.2/24
+        
   wifis:
     # ========================================
     # standard Wi-Fi config (client)

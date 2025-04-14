@@ -8,8 +8,6 @@ fi
 
 SNAP_LIST=(
     rosbot
-    husarion-rplidar
-    husarion-depthai
     husarion-webui
 )
 
@@ -18,8 +16,8 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 
 start_time=$(date +%s)
 
-# /var/snap/rosbot/common/manage_ros_env.sh remove
-# sudo /var/snap/rosbot/common/manage_ros_env.sh remove
+/var/snap/rosbot/common/manage_ros_env.sh remove
+sudo /var/snap/rosbot/common/manage_ros_env.sh remove
 
 for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
@@ -29,8 +27,8 @@ done
 
 for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
-    echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO)"
-    sudo snap install "$snap" --channel="$ROS_DISTRO/stable"
+    echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO)/stable"
+    sudo snap install "$snap" --channel="$ROS_DISTRO"/stable
     sudo "$snap".stop
     sudo snap set "$snap" \
         ros.transport=udp-lo \
@@ -45,31 +43,25 @@ done
 echo "---------------------------------------"
 echo "Setting up the \"rosbot\" snap"
 sudo /var/snap/rosbot/common/post_install.sh
+sudo snap set rosbot driver.robot-model=rosbot-xl
+sudo snap set rosbot driver.mecanum=True
 sudo rosbot.flash
-sudo snap set rosbot driver.robot-model=rosbot
-
-echo "---------------------------------------"
-echo "Setting up the \"husarion-rplidar\" snap"
-sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
-sudo snap set husarion-rplidar configuration=s2
-
-echo "---------------------------------------"
-echo "Setting up the \"husarion-depthai\" snap"
-sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
-sudo snap set husarion-depthai driver.parent-frame=camera_mount_link
 
 echo "---------------------------------------"
 echo "Setting up the \"husarion-webui\" snap"
-sudo cp $SCRIPT_DIR/foxglove-rosbot3.json /var/snap/husarion-webui/common/
-sudo snap set husarion-webui webui.layout=rosbot3
+sudo cp $SCRIPT_DIR/foxglove-rosbot-xl.json /var/snap/husarion-webui/common/
+sudo snap set husarion-webui webui.layout=rosbot-xl
 
 echo "---------------------------------------"
 echo "Default DDS params on host"
 /var/snap/rosbot/common/manage_ros_env.sh
 sudo /var/snap/rosbot/common/manage_ros_env.sh
 
+# # Remove specific snaps
+# SNAP_LIST=( ${SNAP_LIST[@]/husarion-rplidar} )
+# SNAP_LIST=( ${SNAP_LIST[@]/husarion-depthai} )
 echo "---------------------------------------"
-echo "Start all snap"
+echo "Starting the following snaps: ${SNAP_LIST[*]}"
 
 for snap in "${SNAP_LIST[@]}"; do
     sudo "$snap".start

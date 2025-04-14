@@ -5,15 +5,17 @@ Basic Husarion robots configs for Husarion OS
 ## Installing
 
 ```bash
-git clone https://github.com/husarion/robot-configs
-cd robot-configs
-sudo ./install.sh
+cd /opt
+sudo git clone https://github.com/husarion/robot-configs
+sudo ln -s /opt/robot-configs/setup_robot_configuration /usr/local/bin/setup_robot_configuration
+# sudo echo "export PATH=$PATH:/opt/robot-configs" >> ~/.bashrc
+# sudo bash -c "echo 'export PATH=$PATH:/opt/robot-configs' >> /root/.bashrc"
 ```
 
 ## Using
 
 ```bash
-sudo su
+source ~/.bashrc
 
 # ========================
 # Select a robot model
@@ -34,5 +36,5 @@ export ROS_VERSION=ros2_humble
 # Run the configuration
 # ========================
 
-setup_robot_configuration $ROBOT_MODEL $ROS_VERSION
+sudo setup_robot_configuration $ROBOT_MODEL $ROS_VERSION
 ```
