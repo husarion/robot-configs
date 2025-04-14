@@ -40,63 +40,16 @@
       "searchTerms": [],
       "minLogLevel": 2
     },
-    "Image!43vrxjg": {
-      "cameraState": {
-        "distance": 20,
-        "perspective": true,
-        "phi": 60,
-        "target": [
-          0,
-          0,
-          0
-        ],
-        "targetOffset": [
-          0,
-          0,
-          0
-        ],
-        "targetOrientation": [
-          0,
-          0,
-          0,
-          1
-        ],
-        "thetaOffset": 45,
-        "fovy": 45,
-        "near": 0.5,
-        "far": 5000
-      },
-      "followMode": "follow-pose",
-      "scene": {},
-      "transforms": {},
-      "topics": {},
-      "layers": {},
-      "publish": {
-        "type": "point",
-        "poseTopic": "{{env "NAMESPACE"}}/move_base_simple/goal",
-        "pointTopic": "{{env "NAMESPACE"}}/clicked_point",
-        "poseEstimateTopic": "{{env "NAMESPACE"}}/initialpose",
-        "poseEstimateXDeviation": 0.5,
-        "poseEstimateYDeviation": 0.5,
-        "poseEstimateThetaDeviation": 0.26179939
-      },
-      "imageMode": {
-        "imageTopic": "{{env "NAMESPACE"}}{{env "CAMERA_TOPIC"}}",
-        "synchronize": true,
-        "rotation": 0,
-        "annotations": {}
-      }
-    },
     "3D!35ddy4i": {
       "cameraState": {
         "perspective": true,
-        "distance": 3.4964922944740127,
-        "phi": 70.94152830565078,
-        "thetaOffset": -47.60165598678887,
+        "distance": 1.7051518066851792,
+        "phi": 70.94152830565065,
+        "thetaOffset": -47.601655986788806,
         "targetOffset": [
-          -0.590555353525861,
-          0.3890252280659365,
-          -2.1376305305255423e-18
+          0.9445977007246766,
+          0.5230703383073542,
+          -3.228938942816878e-17
         ],
         "target": [
           0,
@@ -180,6 +133,39 @@
           "visible": false
         },
         "frame:odom": {
+          "visible": true
+        },
+        "frame:end_effector_link": {
+          "visible": false
+        },
+        "frame:gripper_left_link": {
+          "visible": false
+        },
+        "frame:gripper_right_link": {
+          "visible": false
+        },
+        "frame:link1": {
+          "visible": false
+        },
+        "frame:link2": {
+          "visible": false
+        },
+        "frame:link3": {
+          "visible": false
+        },
+        "frame:link4": {
+          "visible": false
+        },
+        "frame:link5": {
+          "visible": false
+        },
+        "frame:antenna_connector_link": {
+          "visible": false
+        },
+        "frame:antenna_link": {
+          "visible": false
+        },
+        "frame:slamtec_rplidar_link": {
           "visible": false
         }
       },
@@ -224,8 +210,6 @@
     "Joy!3rd0uxh": {
       "topic": "{{env "NAMESPACE"}}/cmd_vel",
       "publishRate": 20,
-      "stamped": true,
-      "advanced": false,
       "xAxis": {
         "field": "linear-x",
         "initial": 0.8,
@@ -236,6 +220,8 @@
         "initial": 0.8,
         "limit": 1
       },
+      "stamped": {{env "CMD_VEL_STAMPED"}},
+      "advanced": false,
       "frameId": ""
     },
     "Tab!2qhku9u": {
@@ -311,21 +297,17 @@
   },
   "layout": {
     "first": {
-      "first": {
-        "first": "RosOut!b0toow",
-        "second": "Image!43vrxjg",
-        "direction": "row"
-      },
+      "first": "RosOut!b0toow",
       "second": "3D!35ddy4i",
       "direction": "row",
-      "splitPercentage": 65.4054054054054
+      "splitPercentage": 45.436766623207305
     },
     "second": {
       "first": {
         "first": "Joy!3rd0uxh",
         "second": "Tab!2qhku9u",
         "direction": "row",
-        "splitPercentage": 78.48347375243033
+        "splitPercentage": 54.477004700540185
       },
       "second": {
         "first": "Gauge!4jffafa",

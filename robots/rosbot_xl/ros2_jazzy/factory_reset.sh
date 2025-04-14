@@ -27,8 +27,8 @@ done
 
 for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
-    echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO)/edge"
-    sudo snap install "$snap" --channel="$ROS_DISTRO"/edge
+    echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO)/stable"
+    sudo snap install "$snap" --channel="$ROS_DISTRO"/stable
     sudo "$snap".stop
     sudo snap set "$snap" \
         ros.transport=udp-lo \
@@ -44,11 +44,12 @@ echo "---------------------------------------"
 echo "Setting up the \"rosbot\" snap"
 sudo /var/snap/rosbot/common/post_install.sh
 sudo snap set rosbot driver.robot-model=rosbot-xl
+sudo snap set rosbot driver.mecanum=True
 sudo rosbot.flash
 
 echo "---------------------------------------"
 echo "Setting up the \"husarion-webui\" snap"
-sudo cp $SCRIPT_DIR/foxglove-rosbot3.json /var/snap/husarion-webui/common/
+sudo cp $SCRIPT_DIR/foxglove-rosbot-xl.json /var/snap/husarion-webui/common/
 sudo snap set husarion-webui webui.layout=rosbot-xl
 
 echo "---------------------------------------"
