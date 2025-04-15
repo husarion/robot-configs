@@ -137,6 +137,10 @@ echo "Resetting the network configuration"
 cp $SCRIPT_DIR/robots/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
 sudo chmod 600 /etc/netplan/01-network-manager-all.yaml
 
+# Resetting Husarnet IPv6 address
+echo "Resetting Husarnet IPv6 address"
+sudo rm -rf /var/lib/husarnet
+
 # Generating new SSH credentials
 echo "Generating new SSH credentials"
 sudo echo "" > /root/.ssh/authorized_keys
