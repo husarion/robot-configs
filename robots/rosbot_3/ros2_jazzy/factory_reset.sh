@@ -29,7 +29,7 @@ done
 
 for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
-    echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO)"
+    echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO/stable)"
     sudo snap install "$snap" --channel="$ROS_DISTRO/stable"
     sudo "$snap".stop
     sudo snap set "$snap" \
@@ -39,7 +39,7 @@ for snap in "${SNAP_LIST[@]}"; do
         ros.namespace=''
 
     # disable auto-refresh (auto update)
-    sudo snap refresh --hold=forever $snap
+    # sudo snap refresh --hold=forever $snap
 done
 
 echo "---------------------------------------"

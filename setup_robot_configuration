@@ -101,6 +101,11 @@ else
 
   echo "Robot model: ${robot_model}"
 
+  # TODO: temporary solution for Lynx
+  if [[ "$robot_model" == "lynx" ]]; then
+    robot_model="panther"
+  fi
+
   [ -d $SCRIPT_DIR/robots/${robot_model}/${ros_version} ] && cp -rp $SCRIPT_DIR/robots/${robot_model}/${ros_version}/* /home/husarion
   bash $SCRIPT_DIR/robots/${robot_model}/custom_config.sh
 
