@@ -45,8 +45,8 @@ done
 echo "---------------------------------------"
 echo "Setting up the \"rosbot\" snap"
 sudo /var/snap/rosbot/common/post_install.sh
-sudo rosbot.flash
 sudo snap set rosbot driver.robot-model=rosbot
+sudo rosbot.flash
 
 echo "---------------------------------------"
 echo "Setting up the \"husarion-rplidar\" snap"
