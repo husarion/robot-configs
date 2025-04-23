@@ -29,6 +29,10 @@ network:
       dhcp4: true
       dhcp6: true
       optional: true
+      nameservers:
+        addresses:
+          - 8.8.8.8
+          - 1.1.1.1
       access-points:
         "PLACE_YOUR_WIFI_SSID_HERE":
           password: "PLACE_YOUR_WIFI_PASSWORD_HERE"
