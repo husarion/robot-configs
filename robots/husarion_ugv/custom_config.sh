@@ -32,18 +32,3 @@ else
   # Set default rmw as cyclonedds
   echo "RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> /etc/environment
 fi
-
-# Install husarion-shutdown snap
-if ! ping -c 1 "8.8.8.8" &> /dev/null; then
-  echo "No internet connection. Installing husarion-shutdown snap from local files."
-  echo "This version of the snap is not guaranteed to be the latest version."
-  echo "Please connect to the internet and check for updates with 'sudo snap refresh'."
-  sudo snap ack ${SCRIPT_DIR}/files/snaps/core24*.assert
-  sudo snap install ${SCRIPT_DIR}/files/snaps/core24*.snap
-  sudo snap ack ${SCRIPT_DIR}/files/snaps/husarion-shutdown*.assert
-  sudo snap install ${SCRIPT_DIR}/files/snaps/husarion-shutdown*.snap
-  sudo husarion-shutdown.start
-else
-  sudo snap install husarion-shutdown
-  sudo husarion-shutdown.start
-fi
