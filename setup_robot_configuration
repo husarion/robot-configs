@@ -81,7 +81,7 @@ if [ -z "$1" ]; then
   echo "Using default configuration"
   exit 0
 else
-  VALID_ROBOT_MODELS=("rosbot_xl" "rosbot_3" "rosbot_2r" "rosbot_2_pro" "panther" "lynx")
+  VALID_ROBOT_MODELS=("rosbot_xl" "rosbot_3" "rosbot_2r" "rosbot_2_pro" "panther" "lynx" "husarion_ugv")
 
   valid=false
   for model in "${VALID_ROBOT_MODELS[@]}"; do
@@ -101,9 +101,8 @@ else
 
   echo "Robot model: ${robot_model}"
 
-  # TODO: temporary solution for Lynx
-  if [[ "$robot_model" == "lynx" ]]; then
-    robot_model="panther"
+  if [[ "$robot_model" == "lynx" || "$robot_model" == "panther" ]]; then
+    robot_model="husarion_ugv"
   fi
 
   [ -d $SCRIPT_DIR/robots/${robot_model}/${ros_version} ] && cp -rp $SCRIPT_DIR/robots/${robot_model}/${ros_version}/* /home/husarion
