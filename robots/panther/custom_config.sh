@@ -33,5 +33,15 @@ else
   echo "RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> /etc/environment
 fi
 
-# Enable soft shutdown
-echo husarion 'ALL=(ALL) NOPASSWD: /sbin/poweroff, /sbin/reboot, /sbin/shutdown' | EDITOR='tee -a' visudo
+# Install husarion-shutdown snap
+if ! ping -c 1 "8.8.8.8" &> /dev/null; then
+  echo "No internet connection. Installing husarion-shutdown snap from local file."
+  echo "This version of the snap is not guaranteed to be the latest version."
+  echo "Please check for updates with 'sudo snap refresh husarion-shutdown'."
+  sudo snap ack husarion-shutdown*.assert
+  sudo snap install ${SCRIPT_DIR}/husarion-shutdown*.snap
+  sudo husarion-shutdown.start
+else
+  sudo snap install husarion-shutdown
+  sudo husarion-shutdown.start
+fi
