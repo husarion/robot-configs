@@ -32,6 +32,3 @@ else
   # Set default rmw as cyclonedds
   echo "RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> /etc/environment
 fi
-
-# Enable soft shutdown
-echo husarion 'ALL=(ALL) NOPASSWD: /sbin/poweroff, /sbin/reboot, /sbin/shutdown' | EDITOR='tee -a' visudo
