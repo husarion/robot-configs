@@ -3,22 +3,22 @@
     "Plot!1u5bb0v": {
       "paths": [
         {
-          "value": "{{env "NAMESPACE"}}/imu_broadcaster/imu.orientation.w",
+          "value": "{{env 'NAMESPACE'}}/imu_broadcaster/imu.orientation.w",
           "enabled": true,
           "timestampMethod": "receiveTime"
         },
         {
-          "value": "{{env "NAMESPACE"}}/imu_broadcaster/imu.orientation.x",
+          "value": "{{env 'NAMESPACE'}}/imu_broadcaster/imu.orientation.x",
           "enabled": true,
           "timestampMethod": "receiveTime"
         },
         {
-          "value": "{{env "NAMESPACE"}}/imu_broadcaster/imu.orientation.y",
+          "value": "{{env 'NAMESPACE'}}/imu_broadcaster/imu.orientation.y",
           "enabled": true,
           "timestampMethod": "receiveTime"
         },
         {
-          "value": "{{env "NAMESPACE"}}/imu_broadcaster/imu.orientation.z",
+          "value": "{{env 'NAMESPACE'}}/imu_broadcaster/imu.orientation.z",
           "enabled": true,
           "timestampMethod": "receiveTime"
         }
@@ -170,7 +170,7 @@
         }
       },
       "topics": {
-        "{{env "NAMESPACE"}}/scan": {
+        "{{env 'NAMESPACE'}}/scan": {
           "visible": true,
           "colorField": "intensity",
           "colorMode": "colormap",
@@ -189,7 +189,7 @@
           "url": "",
           "filePath": "",
           "parameter": "",
-          "topic": "{{env "NAMESPACE"}}/robot_description",
+          "topic": "{{env 'NAMESPACE'}}/robot_description",
           "framePrefix": "",
           "displayMode": "auto",
           "fallbackColor": "#ffffff",
@@ -198,9 +198,9 @@
       },
       "publish": {
         "type": "point",
-        "poseTopic": "{{env "NAMESPACE"}}/move_base_simple/goal",
-        "pointTopic": "{{env "NAMESPACE"}}/clicked_point",
-        "poseEstimateTopic": "{{env "NAMESPACE"}}/initialpose",
+        "poseTopic": "{{env 'NAMESPACE'}}/move_base_simple/goal",
+        "pointTopic": "{{env 'NAMESPACE'}}/clicked_point",
+        "poseEstimateTopic": "{{env 'NAMESPACE'}}/initialpose",
         "poseEstimateXDeviation": 0.5,
         "poseEstimateYDeviation": 0.5,
         "poseEstimateThetaDeviation": 0.26179939
@@ -208,7 +208,7 @@
       "imageMode": {}
     },
     "Joy!3rd0uxh": {
-      "topic": "{{env "NAMESPACE"}}/cmd_vel",
+      "topic": "{{env 'NAMESPACE'}}/cmd_vel",
       "publishRate": 20,
       "xAxis": {
         "field": "linear-x",
@@ -220,7 +220,7 @@
         "initial": 0.8,
         "limit": 1
       },
-      "stamped": {{env "CMD_VEL_STAMPED"}},
+      "stamped": "{{env 'CMD_VEL_STAMPED'}}",
       "advanced": false,
       "frameId": ""
     },

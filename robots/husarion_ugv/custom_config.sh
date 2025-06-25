@@ -15,7 +15,7 @@ sudo systemctl disable isc-dhcp-server
 sudo systemctl daemon-reload
 
 # Disable cloud-init network config
-sudo rm -rf /etc/netplan/50-cloud-init.yaml 
+sudo rm -rf /etc/netplan/50-cloud-init.yaml
 sudo echo 'network: {config: disabled}' > /etc/netplan/99-disable-network-config.cfg
 sudo chmod 600 /etc/netplan/99-disable-network-config.cfg
 

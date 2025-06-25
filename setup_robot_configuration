@@ -2,7 +2,7 @@
 
 # Check if running with root privileges
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
+   echo "This script must be run as root"
    exit 1
 fi
 
@@ -154,7 +154,7 @@ sudo echo "" > /home/husarion/.ssh/known_hosts
 sudo rm -rf /etc/ssh/ssh_host_*
 
 ssh-keygen -A
-# systemctl restart ssh.service 
+# systemctl restart ssh.service
 
 # Print success message
 echo ""
