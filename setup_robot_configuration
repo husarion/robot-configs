@@ -4,7 +4,7 @@ set -euo pipefail
 # Constants
 SCRIPT_NAME="$(basename "$0")"
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
-VALID_ROS_VERSIONS=("ros2_jazzy" "ros2_humble")
+VALID_ROS_VERSIONS=("noetic" "jazzy" "humble" "ros_noetic" "ros2_jazzy" "ros2_humble")
 VALID_ROBOT_MODELS=("rosbot_xl" "rosbot_3" "rosbot_2r" "rosbot_2_pro" "panther" "lynx" "husarion_ugv")
 
 # Functions
@@ -57,13 +57,17 @@ validate_robot_model() {
 
 validate_ros_version() {
   local version="${1:-}"
-  if [[ -z "$version" ]]; then
-    case "${IMAGE_TYPE:-}" in
-      ROS2_JAZZY) echo "ros2_jazzy" ;;
-      ROS2_HUMBLE|ROS2_FOXY) echo "ros2_humble" ;;
-      *) echo "Error: No ROS version specified" >&2; exit 1 ;;
-    esac
-  elif [[ " ${VALID_ROS_VERSIONS[*]} " == *" $version "* ]]; then
+  if [[ -z "$version" && -n "$ROS_DISTRO" ]]; then
+    version="$ROS_DISTRO"
+  fi
+
+  if [[ " ${VALID_ROS_VERSIONS[*]} " == *" $version "* ]]; then
+    if [[ "$version" == "ros2_jazzy" || "$version" == "ros2_humble" ]]; then
+      version="${version#ros2_}"  # Remove 'ros2_' prefix for compatibility
+    fi
+    if [[ "$version" == "ros_noetic" ]]; then
+      version="noetic"  # Backward compatibility for ROS 1
+    fi
     echo "$version"
   else
     echo "Error: Invalid ROS version: $version. Valid: ${VALID_ROS_VERSIONS[*]}" >&2
@@ -93,11 +97,12 @@ robot_config() {
 
   local config_path="$SCRIPT_DIR/robots/$folder/$ros_version"
   if [[ -d "$config_path" ]]; then
-    cp -rp "$SCRIPT_DIR/robots/helpers.sh"* /home/husarion/
+    cp -rp "$SCRIPT_DIR/robots/helpers.sh" /home/husarion/
     cp -rp "$config_path/"* /home/husarion/
     bash "$SCRIPT_DIR/robots/$folder/custom_config.sh" "$model" "$ros_version"
   else
     echo "Warning: Config dir \"$config_path\" not found. Skipping robot-specific setup."
+    exit
   fi
 }
 

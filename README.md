@@ -20,4 +20,4 @@ sudo setup_robot_configuration <robot_model> [ros_version]
 | Arguments         | Values                                   |
 | :--------------- | :------------------------------------------------- |
 | `robot_model`    | `rosbot_xl`, `rosbot_3`, `rosbot_2r`, `rosbot_2_pro`, `panther`, `lynx`, `husarion_ugv` |
-| `ros_version`    | `ros2_jazzy`, `ros2_humble`                        |
+| `ros_version`    | `jazzy`, `humble`, `noetic` (panther user-computer only) |

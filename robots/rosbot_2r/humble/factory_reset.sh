@@ -3,10 +3,10 @@ set -e
 
 # Constants
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SNAP_LIST=(rosbot husarion-depthai husarion-rplidar husarion-webui)
-ROS_DISTRO=${ROS_DISTRO:-jazzy}
+SNAP_LIST=(rosbot husarion-astra husarion-rplidar husarion-webui)
+ROS_DISTRO=humble
 ROBOT_MODEL=rosbot
-LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot.json"
+LAYOUT_FILE="$SCRIPT_DIR/foxglove-$ROBOT_MODEL.json"
 
 # Source
 if [ -f "$SCRIPT_DIR/../../helpers.sh" ]; then
@@ -28,13 +28,12 @@ sudo /var/snap/rosbot/common/post_install.sh
 sudo snap set rosbot driver.robot-model=$ROBOT_MODEL
 sudo rosbot.flash
 
-print_header "Setting up DepthAI snap"
-sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
-sudo snap set husarion-depthai driver.parent-frame=camera_mount_link
+print_header "Setting up Astra snap"
+sudo snap connect husarion-astra:shm-plug husarion-astra:shm-slot
 
 print_header "Setting up RPLIDAR snap"
 sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
-sudo snap set husarion-rplidar configuration=s2
+sudo snap set husarion-rplidar configuration=a2
 
 print_header "Setting up WebUI snap"
 sudo cp $LAYOUT_FILE /var/snap/husarion-webui/common/

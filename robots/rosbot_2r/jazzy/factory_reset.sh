@@ -4,9 +4,9 @@ set -e
 # Constants
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SNAP_LIST=(rosbot husarion-astra husarion-rplidar husarion-webui)
-ROS_DISTRO=${ROS_DISTRO:-jazzy}
+ROS_DISTRO=jazzy
 ROBOT_MODEL=rosbot
-LAYOUT_FILE="$SCRIPT_DIR/foxglove-$ROBOT_MODEL.json"
+LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot.json"
 
 # Source
 if [ -f "$SCRIPT_DIR/../../helpers.sh" ]; then

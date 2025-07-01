@@ -4,7 +4,7 @@ set -e
 # Constants
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SNAP_LIST=(rosbot husarion-webui)
-ROS_DISTRO=${ROS_DISTRO:-jazzy}
+ROS_DISTRO=humble
 ROBOT_MODEL=rosbot-xl
 LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot-xl.json"
 VALID_CONFIGURATION=("basic" "telepresence" "autonomy" "manipulation" "manipulation-pro")
