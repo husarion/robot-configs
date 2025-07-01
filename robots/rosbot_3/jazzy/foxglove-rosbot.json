@@ -159,12 +159,12 @@
         "perspective": true,
         "distance": 2.5,
         "phi": 39.999999999999986,
-        "thetaOffset": 75,
-        "targetOffset": [
-          0,
-          0,
-          -2.4395172985200677e-17
-        ],
+        "thetaOffset": 90,
+          "targetOffset": [
+            0.5,
+            0,
+            0
+          ],
         "target": [
           0,
           0,
