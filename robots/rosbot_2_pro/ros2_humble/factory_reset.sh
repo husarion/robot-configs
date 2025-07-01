@@ -33,7 +33,7 @@ sudo snap connect husarion-astra:shm-plug husarion-astra:shm-slot
 
 print_header "Setting up RPLIDAR snap"
 sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
-sudo snap set husarion-rplidar configuration=s2
+sudo snap set husarion-rplidar configuration=a3
 
 print_header "Setting up WebUI snap"
 sudo cp $LAYOUT_FILE /var/snap/husarion-webui/common/
