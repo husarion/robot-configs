@@ -25,7 +25,7 @@ fi
 for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
     echo "removing the \"$snap\" snap"
-    sudo snap remove "$snap" 
+    sudo snap remove "$snap"
 done
 
 for snap in "${SNAP_LIST[@]}"; do
@@ -78,4 +78,3 @@ minutes=$(( (duration % 3600) / 60 ))
 seconds=$(( duration % 60 ))
 
 printf "Script completed in %02d:%02d:%02d (hh:mm:ss)\n" $hours $minutes $seconds
-

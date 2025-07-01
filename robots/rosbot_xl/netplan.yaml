@@ -1,3 +1,4 @@
+---
 network:
   version: 2
   renderer: NetworkManager
@@ -20,7 +21,7 @@ network:
       optional: true
       addresses:
         - 192.168.77.2/24
-        
+
   wifis:
     # ========================================
     # standard Wi-Fi config (client)
@@ -34,12 +35,12 @@ network:
           - 8.8.8.8
           - 1.1.1.1
       access-points:
-        "PLACE_YOUR_WIFI_SSID_HERE":
-          password: "PLACE_YOUR_WIFI_PASSWORD_HERE"
+        PLACE_YOUR_WIFI_SSID_HERE:
+          password: PLACE_YOUR_WIFI_PASSWORD_HERE
 
     # ========================================
     # access point Wi-Fi config
-    # repace "channel" with the number permitted in your country
+    # replace "channel" with the number permitted in your country
     # https://en.wikipedia.org/wiki/List_of_WLAN_channels
     # ========================================
     # wlan0:
