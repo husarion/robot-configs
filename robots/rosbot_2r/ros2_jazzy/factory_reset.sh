@@ -3,11 +3,10 @@ set -e
 
 # Constants
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SNAP_LIST=(rosbot husarion-webui)
-ADDITIONAL_SNAP_LIST=(husarion-depthai husarion-rplidar)
+SNAP_LIST=(rosbot husarion-astra husarion-rplidar husarion-webui)
 ROS_DISTRO=${ROS_DISTRO:-jazzy}
-ROBOT_MODEL=rosbot-xl
-LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot-xl.json"
+ROBOT_MODEL=rosbot
+LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot.json"
 
 # Source
 if [ -f "$SCRIPT_DIR/../../helpers.sh" ]; then
@@ -21,12 +20,6 @@ start_time=$(date +%s)
 
 check_user
 
-ARE_ADDITIONAL_SNAPS=false
-if ask_to_install_snaps "${ADDITIONAL_SNAP_LIST[@]}"; then
-    SNAP_LIST+=("${ADDITIONAL_SNAP_LIST[@]}")
-    ARE_ADDITIONAL_SNAPS=true
-fi
-
 print_header "Reinstall snaps"
 reinstall_snaps "${SNAP_LIST[@]}"
 
@@ -35,15 +28,12 @@ sudo /var/snap/rosbot/common/post_install.sh
 sudo snap set rosbot driver.robot-model=$ROBOT_MODEL
 sudo rosbot.flash
 
-if [ "$ARE_ADDITIONAL_SNAPS" = true ]; then
-    print_header "Setting up DepthAI snap"
-    sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
-    sudo snap set husarion-depthai driver.parent-frame=camera_mount_link
+print_header "Setting up Astra snap"
+sudo snap connect husarion-astra:shm-plug husarion-astra:shm-slot
 
-    print_header "Setting up RPLIDAR snap"
-    sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
-    sudo snap set husarion-rplidar configuration=s3
-fi
+print_header "Setting up RPLIDAR snap"
+sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
+sudo snap set husarion-rplidar configuration=s2
 
 print_header "Setting up WebUI snap"
 sudo cp $LAYOUT_FILE /var/snap/husarion-webui/common/

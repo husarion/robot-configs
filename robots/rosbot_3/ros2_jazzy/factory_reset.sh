@@ -1,86 +1,52 @@
 #!/bin/bash
+set -e
 
-# Check if the script is being run as a normal user
-if [ "$(id -u)" -eq 0 ]; then
-    echo "Error: This script must be run as a normal user."
-    exit 1
+# Constants
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SNAP_LIST=(rosbot husarion-depthai husarion-rplidar husarion-webui)
+ROS_DISTRO=${ROS_DISTRO:-jazzy}
+ROBOT_MODEL=rosbot
+LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot.json"
+
+# Source
+if [ -f "$SCRIPT_DIR/../../helpers.sh" ]; then
+    source "$SCRIPT_DIR/../../helpers.sh" # Working inside repo
+else
+    source "$SCRIPT_DIR/helpers.sh" # Working on Husarion OS after setup_robot_configuration
 fi
 
-SNAP_LIST=(
-    rosbot
-    husarion-rplidar
-    husarion-depthai
-    husarion-webui
-)
-
-ROS_DISTRO=${ROS_DISTRO:-humble}
-SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
-
+# Main
 start_time=$(date +%s)
 
-# /var/snap/rosbot/common/manage_ros_env.sh remove
-# sudo /var/snap/rosbot/common/manage_ros_env.sh remove
+check_user
 
-for snap in "${SNAP_LIST[@]}"; do
-    echo "---------------------------------------"
-    echo "removing the \"$snap\" snap"
-    sudo snap remove "$snap"
-done
+print_header "Reinstall snaps"
+reinstall_snaps "${SNAP_LIST[@]}"
 
-for snap in "${SNAP_LIST[@]}"; do
-    echo "---------------------------------------"
-    echo "Installing the \"$snap\" snap (ROS 2 $ROS_DISTRO/stable)"
-    sudo snap install "$snap" --channel="$ROS_DISTRO/stable"
-    sudo "$snap".stop
-    sudo snap set "$snap" \
-        ros.transport=udp-lo \
-        ros.localhost-only='' \
-        ros.domain-id=0 \
-        ros.namespace=''
-
-    # disable auto-refresh (auto update)
-    # sudo snap refresh --hold=forever $snap
-done
-
-echo "---------------------------------------"
-echo "Setting up the \"rosbot\" snap"
+print_header "Setting up ROSbot snap"
 sudo /var/snap/rosbot/common/post_install.sh
-sudo snap set rosbot driver.robot-model=rosbot
+sudo snap set rosbot driver.robot-model=$ROBOT_MODEL
 sudo rosbot.flash
 
-echo "---------------------------------------"
-echo "Setting up the \"husarion-rplidar\" snap"
-sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
-sudo snap set husarion-rplidar configuration=s2
-
-echo "---------------------------------------"
-echo "Setting up the \"husarion-depthai\" snap"
+print_header "Setting up DepthAI snap"
 sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
 sudo snap set husarion-depthai driver.parent-frame=camera_mount_link
 
-echo "---------------------------------------"
-echo "Setting up the \"husarion-webui\" snap"
-sudo cp $SCRIPT_DIR/foxglove-rosbot3.json /var/snap/husarion-webui/common/
-sudo snap set husarion-webui webui.layout=rosbot3
+print_header "Setting up RPLIDAR snap"
+sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
+sudo snap set husarion-rplidar configuration=s2
 
-echo "---------------------------------------"
-echo "Default DDS params on host"
-/var/snap/rosbot/common/manage_ros_env.sh
+print_header "Setting up WebUI snap"
+sudo cp $LAYOUT_FILE /var/snap/husarion-webui/common/
+sudo snap set husarion-webui webui.layout=$ROBOT_MODEL
+
+print_header "Setting up default DDS params on host"
 sudo /var/snap/rosbot/common/manage_ros_env.sh
 
-echo "---------------------------------------"
-echo "Start all snap"
-
+print_header "Start all snaps"
 for snap in "${SNAP_LIST[@]}"; do
     sudo "$snap".start
-    # sudo "$snap".restart
 done
 
-end_time=$(date +%s)
-duration=$(( end_time - start_time ))
-
-hours=$(( duration / 3600 ))
-minutes=$(( (duration % 3600) / 60 ))
-seconds=$(( duration % 60 ))
-
-printf "Script completed in %02d:%02d:%02d (hh:mm:ss)\n" $hours $minutes $seconds
+duration=$(( $(date +%s) - start_time ))
+printf "Script completed in %02d:%02d (mm:ss)\n" $((duration/60)) $((duration%60))

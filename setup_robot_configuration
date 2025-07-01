@@ -93,6 +93,7 @@ robot_config() {
 
   local config_path="$SCRIPT_DIR/robots/$folder/$ros_version"
   if [[ -d "$config_path" ]]; then
+    cp -rp "$SCRIPT_DIR/robots/helpers.sh"* /home/husarion/
     cp -rp "$config_path/"* /home/husarion/
     bash "$SCRIPT_DIR/robots/$folder/custom_config.sh" "$model" "$ros_version"
   else
