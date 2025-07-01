@@ -49,7 +49,7 @@ validate_robot_model() {
   local model="$1"
   if [[ -z "$model" || ! " ${VALID_ROBOT_MODELS[*]} " =~ " $model " ]]; then
     echo "Error: Invalid robot model: $model. Valid: ${VALID_ROBOT_MODELS[*]}" >&2
-    echo "Usage: $SCRIPT_NAME <robot_model> [ros_version]"
+    echo "Usage: $SCRIPT_NAME <robot_model> [ros_version]" >&2
     exit 1
   fi
   echo "$model"
@@ -67,7 +67,7 @@ validate_ros_version() {
     echo "$version"
   else
     echo "Error: Invalid ROS version: $version. Valid: ${VALID_ROS_VERSIONS[*]}" >&2
-    echo "Usage: $SCRIPT_NAME <robot_model> [ros_version]"
+    echo "Usage: $SCRIPT_NAME <robot_model> [ros_version]" >&2
     exit 1
   fi
 }
