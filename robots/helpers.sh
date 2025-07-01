@@ -13,11 +13,13 @@ print_header() {
 }
 
 reinstall_snaps() {
+    local version="$1"
+    shift
     local snaps=("$@")
     for snap in "${snaps[@]}"; do
         sudo snap remove "$snap"
 
-        sudo snap install "$snap" --channel="$ROS_DISTRO"/stable
+        sudo snap install "$snap" --channel="$version/stable"
         sudo snap set "$snap" \
             ros.transport=udp-lo \
             ros.localhost-only='' \

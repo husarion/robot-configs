@@ -1,20 +1,20 @@
 #!/bin/bash
 set -e
 
+# Source
+if [ -f "/home/husarion/helpers.sh" ]; then
+    source "/home/husarion/helpers.sh"
+    source "/home/husarion/.robot_env"
+else
+    echo "This script should be running from /home/husarion directory. Please run setup_robot_configuration to copy specific robot files."
+fi
+
 # Constants
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SNAP_LIST=(rosbot husarion-webui)
-ROS_DISTRO=jazzy
 ROBOT_MODEL=rosbot-xl
 LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot-xl.json"
 VALID_CONFIGURATION=("basic" "telepresence" "autonomy" "manipulation" "manipulation-pro")
-
-# Source
-if [ -f "$SCRIPT_DIR/../../helpers.sh" ]; then
-    source "$SCRIPT_DIR/../../helpers.sh" # Working inside repo
-else
-    source "$SCRIPT_DIR/helpers.sh" # Working on Husarion OS after setup_robot_configuration
-fi
 
 # Main
 start_time=$(date +%s)
@@ -51,7 +51,7 @@ case $configuration in
 esac
 
 print_header "Reinstall snaps"
-reinstall_snaps "${SNAP_LIST[@]}"
+reinstall_snaps "$SNAP_VERSION" "${SNAP_LIST[@]}"
 
 print_header "Setting up ROSbot snap $configuration"
 sudo /var/snap/rosbot/common/post_install.sh
@@ -63,12 +63,16 @@ if [[ " ${SNAP_LIST[@]} " =~ " husarion-depthai " ]]; then
     print_header "Setting up DepthAI snap"
     sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
     sudo snap set husarion-depthai driver.parent-frame=camera_mount_link
+    sed -i 's|^# sudo husarion-depthai.start|sudo husarion-depthai.start|' ./ros_driver_start.sh
+    sed -i 's|^# sudo husarion-depthai.stop|sudo husarion-depthai.stop|' ./ros_driver_stop.sh
 fi
 
 if [[ " ${SNAP_LIST[@]} " =~ " husarion-rplidar " ]]; then
     print_header "Setting up RPLIDAR snap"
     sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
     sudo snap set husarion-rplidar configuration=s3
+    sed -i 's|^# sudo husarion-rplidar.start|sudo husarion-rplidar.start|' ./ros_driver_start.sh
+    sed -i 's|^# sudo husarion-rplidar.stop|sudo husarion-rplidar.stop|' ./ros_driver_stop.sh
 fi
 
 print_header "Setting up WebUI snap"

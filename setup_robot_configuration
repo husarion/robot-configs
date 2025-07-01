@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_NAME="$(basename "$0")"
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 VALID_ROS_VERSIONS=("noetic" "jazzy" "humble" "ros_noetic" "ros2_jazzy" "ros2_humble")
-VALID_ROBOT_MODELS=("rosbot_xl" "rosbot_3" "rosbot_2r" "rosbot_2_pro" "panther" "lynx" "husarion_ugv")
+VALID_ROBOT_MODELS=("rosbot_xl" "rosbot_3" "rosbot_2r" "rosbot_2_pro" "panther" "lynx")
 
 # Functions
 check_root() {
@@ -78,13 +78,22 @@ validate_ros_version() {
 
 set_robot_model_env() {
   local model="$1"
-  if [[ "${ROBOT_MODEL_NAME:-}" != "$model" ]]; then
-    export ROBOT_MODEL_NAME="$model"
-    if ! grep -q "^ROBOT_MODEL_NAME=" /etc/environment; then
-      echo "ROBOT_MODEL_NAME=$model" | sudo tee -a /etc/environment
-    else
-      sudo sed -i "s/^ROBOT_MODEL_NAME=.*/ROBOT_MODEL_NAME=$model/" /etc/environment
-    fi
+  local version="$2"
+  local env_file="/home/husarion/.robot_env"
+  [ -f "$env_file" ] || touch "$env_file"
+
+  # ROBOT_MODEL_NAME
+  if grep -q "^ROBOT_MODEL_NAME=" "$env_file"; then
+    sed -i "s/^ROBOT_MODEL_NAME=.*/ROBOT_MODEL_NAME=$model/" "$env_file"
+  else
+    echo "ROBOT_MODEL_NAME=$model" >> "$env_file"
+  fi
+
+  # SNAP_VERSION
+  if grep -q "^SNAP_VERSION=" "$env_file"; then
+    sed -i "s/^SNAP_VERSION=.*/SNAP_VERSION=$version/" "$env_file"
+  else
+    echo "SNAP_VERSION=$version" >> "$env_file"
   fi
 }
 
@@ -160,7 +169,7 @@ if [[ -n "${1:-}" ]]; then
   ros_version=$(validate_ros_version "${2:-}")
   echo "Robot model: $robot_model"
   echo "ROS version: $ros_version"
-  set_robot_model_env "$robot_model"
+  set_robot_model_env "$robot_model" "$ros_version"
   robot_config "$robot_model" "$ros_version"
 
   print_header "Setting up MOTD"
