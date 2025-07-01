@@ -76,7 +76,7 @@ validate_ros_version() {
   fi
 }
 
-set_robot_model_env() {
+set_robot_env() {
   local model="$1"
   local version="$2"
   local env_file="/home/husarion/.robot_env"
@@ -169,7 +169,7 @@ if [[ -n "${1:-}" ]]; then
   ros_version=$(validate_ros_version "${2:-}")
   echo "Robot model: $robot_model"
   echo "ROS version: $ros_version"
-  set_robot_model_env "$robot_model" "$ros_version"
+  set_robot_env "$robot_model" "$ros_version"
   robot_config "$robot_model" "$ros_version"
 
   print_header "Setting up MOTD"

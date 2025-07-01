@@ -30,3 +30,16 @@ reinstall_snaps() {
     # sudo snap refresh --hold=forever $snap
     done
 }
+
+set_robot_env() {
+  local name="$1"
+  local value="$2"
+  local env_file="/home/husarion/.robot_env"
+  [ -f "$env_file" ] || touch "$env_file"
+
+  if grep -q "^$name=" "$env_file"; then
+    sed -i "s/^$name=.*/$name=$value/" "$env_file"
+  else
+    echo "$name=$value" >> "$env_file"
+  fi
+}
