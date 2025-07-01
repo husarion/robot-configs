@@ -12,16 +12,6 @@ print_header() {
   echo "---------------------------------------"
 }
 
-ask_to_install_snaps() {
-    local snaps=("$@")
-    read -p "Do you want to install additional snaps (${snaps[*]})? [y/N]: " install_additional
-    if [[ "$install_additional" =~ ^[Yy]$ ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
 reinstall_snaps() {
     local snaps=("$@")
     for snap in "${snaps[@]}"; do

@@ -157,13 +157,13 @@
     "3D!35ddy4i": {
       "cameraState": {
         "perspective": true,
-        "distance": 1.461954530256778,
-        "phi": 70.94152830565086,
-        "thetaOffset": -47.60165598678886,
+        "distance": 2.5,
+        "phi": 39.999999999999986,
+        "thetaOffset": 75,
         "targetOffset": [
-          0.09402761390585557,
-          0.08929320278058338,
-          -2.4609667161254917e-17
+          0,
+          0,
+          -2.4395172985200677e-17
         ],
         "target": [
           0,
@@ -183,7 +183,13 @@
       "followMode": "follow-pose",
       "followTf": "base_link",
       "scene": {
-        "meshUpAxis": "z_up"
+        "meshUpAxis": "z_up",
+        "transforms": {
+          "showLabel": false,
+          "axisScale": 2,
+          "lineWidth": 1.5,
+          "labelSize": 0.1
+        }
       },
       "transforms": {
         "frame:base_link": {
@@ -289,14 +295,14 @@
           "colorField": "intensity",
           "colorMode": "colormap",
           "colorMap": "turbo",
-          "pointSize": 9
+          "pointSize": 3
         },
         "{{env "NAMESPACE"}}/scan": {
           "visible": true,
           "colorField": "intensity",
           "colorMode": "colormap",
           "colorMap": "rainbow",
-          "pointSize": 5
+          "pointSize": 3
         },
         "/range/fl": {
           "visible": false,
@@ -407,7 +413,7 @@
     "Joy!3rd0uxh": {
       "topic": "{{env "NAMESPACE"}}/cmd_vel",
       "publishRate": 20,
-      "stamped": "{{env "CMD_VEL_STAMPED"}}",
+      "stamped": {{env "CMD_VEL_STAMPED"}},
       "advanced": false,
       "xAxis": {
         "field": "linear-x",

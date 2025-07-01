@@ -157,18 +157,19 @@
       },
       "3D!35ddy4i": {
         "cameraState": {
-          "distance": 3.321667679751064,
           "perspective": true,
-          "phi": 65.21425557837868,
+          "distance": 2.5,
+          "phi": 39.999999999999986,
+          "thetaOffset": 75,
+          "targetOffset": [
+            0,
+            0,
+            -2.4395172985200677e-17
+          ],
           "target": [
             0,
             0,
             0
-          ],
-          "targetOffset": [
-            0.36180653832778414,
-            -0.03278646619346757,
-            -5.048324398904458e-18
           ],
           "targetOrientation": [
             0,
@@ -176,15 +177,20 @@
             0,
             1
           ],
-          "thetaOffset": 91.48925310411987,
           "fovy": 45,
           "near": 0.5,
           "far": 5000
         },
         "followMode": "follow-pose",
-        "followTf": "slamtec_rplidar_a2_link",
+        "followTf": "base_link",
         "scene": {
-        "meshUpAxis": "z_up"
+          "meshUpAxis": "z_up",
+          "transforms": {
+            "showLabel": false,
+            "axisScale": 2,
+            "lineWidth": 1.5,
+            "labelSize": 0.1
+          }
       },
         "transforms": {
           "frame:base_link": {
@@ -257,7 +263,7 @@
             "colorField": "intensity",
             "colorMode": "colormap",
             "colorMap": "turbo",
-            "pointSize": 9
+            "pointSize": 3
           }
         },
         "layers": {
@@ -379,7 +385,7 @@
           "value": -1
         },
         "foxglovePanelTitle": "Diff Drive",
-        "stamped": "{{env "CMD_VEL_STAMPED"}}"
+        "stamped": {{env "CMD_VEL_STAMPED"}}
       },
       "Tab!2qhku9u": {
         "activeTabIdx": 0,

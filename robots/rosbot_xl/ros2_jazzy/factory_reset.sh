@@ -4,10 +4,10 @@ set -e
 # Constants
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SNAP_LIST=(rosbot husarion-webui)
-ADDITIONAL_SNAP_LIST=(husarion-depthai husarion-rplidar)
 ROS_DISTRO=${ROS_DISTRO:-jazzy}
 ROBOT_MODEL=rosbot-xl
 LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot-xl.json"
+VALID_CONFIGURATION=("basic" "telepresence" "autonomy" "manipulation" "manipulation-pro")
 
 # Source
 if [ -f "$SCRIPT_DIR/../../helpers.sh" ]; then
@@ -21,25 +21,51 @@ start_time=$(date +%s)
 
 check_user
 
-ARE_ADDITIONAL_SNAPS=false
-if ask_to_install_snaps "${ADDITIONAL_SNAP_LIST[@]}"; then
-    SNAP_LIST+=("${ADDITIONAL_SNAP_LIST[@]}")
-    ARE_ADDITIONAL_SNAPS=true
-fi
+select configuration in "${VALID_CONFIGURATION[@]}"; do
+    if [[ " ${VALID_CONFIGURATION[*]} " == *" $configuration "* ]]; then
+        break
+    else
+        echo "Invalid selection. Please try again."
+    fi
+done
+
+case $configuration in
+    "basic")
+        ;;
+    "telepresence")
+        SNAP_LIST+=(husarion-depthai)
+        ;;
+    "autonomy")
+        SNAP_LIST+=(husarion-depthai husarion-rplidar)
+        ;;
+    "manipulation")
+        SNAP_LIST+=(husarion-rplidar)
+        ;;
+    "manipulation-pro")
+        SNAP_LIST+=(husarion-rplidar)
+        ;;
+    *)
+        echo "Invalid configuration selected. Exiting."
+        exit 1
+        ;;
+esac
 
 print_header "Reinstall snaps"
 reinstall_snaps "${SNAP_LIST[@]}"
 
-print_header "Setting up ROSbot snap"
+print_header "Setting up ROSbot snap $configuration"
 sudo /var/snap/rosbot/common/post_install.sh
 sudo snap set rosbot driver.robot-model=$ROBOT_MODEL
+sudo snap set rosbot driver.configuration=$configuration
 sudo rosbot.flash
 
-if [ "$ARE_ADDITIONAL_SNAPS" = true ]; then
+if [[ " ${SNAP_LIST[@]} " =~ " husarion-depthai " ]]; then
     print_header "Setting up DepthAI snap"
     sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
     sudo snap set husarion-depthai driver.parent-frame=camera_mount_link
+fi
 
+if [[ " ${SNAP_LIST[@]} " =~ " husarion-rplidar " ]]; then
     print_header "Setting up RPLIDAR snap"
     sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
     sudo snap set husarion-rplidar configuration=s3

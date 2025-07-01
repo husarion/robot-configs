@@ -43,13 +43,13 @@
     "3D!35ddy4i": {
       "cameraState": {
         "perspective": true,
-        "distance": 1.7051518066851792,
-        "phi": 70.94152830565065,
-        "thetaOffset": -47.601655986788806,
+        "distance": 2.5,
+        "phi": 39.999999999999986,
+        "thetaOffset": 75,
         "targetOffset": [
-          0.9445977007246766,
-          0.5230703383073542,
-          -3.228938942816878e-17
+          0,
+          0,
+          -2.4395172985200677e-17
         ],
         "target": [
           0,
@@ -67,9 +67,15 @@
         "far": 5000
       },
       "followMode": "follow-pose",
-      "followTf": "odom",
+      "followTf": "base_link",
       "scene": {
-        "meshUpAxis": "z_up"
+        "meshUpAxis": "z_up",
+        "transforms": {
+          "showLabel": false,
+          "axisScale": 2,
+          "lineWidth": 1.5,
+          "labelSize": 0.1
+        }
       },
       "transforms": {
         "frame:base_link": {
@@ -175,7 +181,7 @@
           "colorField": "intensity",
           "colorMode": "colormap",
           "colorMap": "turbo",
-          "pointSize": 9
+          "pointSize": 3
         }
       },
       "layers": {
@@ -220,7 +226,7 @@
         "initial": 0.8,
         "limit": 1
       },
-      "stamped": "{{env "CMD_VEL_STAMPED"}}",
+      "stamped": {{env "CMD_VEL_STAMPED"}},
       "advanced": false,
       "frameId": ""
     },
