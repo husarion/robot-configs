@@ -40,22 +40,22 @@
     "Plot!1u5bb0v": {
       "paths": [
         {
-          "value": "{{env 'NAMESPACE'}}/imu_broadcaster/imu.orientation.w",
+          "value": "{{env "NAMESPACE"}}/imu_broadcaster/imu.orientation.w",
           "enabled": true,
           "timestampMethod": "receiveTime"
         },
         {
-          "value": "{{env 'NAMESPACE'}}/imu_broadcaster/imu.orientation.x",
+          "value": "{{env "NAMESPACE"}}/imu_broadcaster/imu.orientation.x",
           "enabled": true,
           "timestampMethod": "receiveTime"
         },
         {
-          "value": "{{env 'NAMESPACE'}}/imu_broadcaster/imu.orientation.y",
+          "value": "{{env "NAMESPACE"}}/imu_broadcaster/imu.orientation.y",
           "enabled": true,
           "timestampMethod": "receiveTime"
         },
         {
-          "value": "{{env 'NAMESPACE'}}/imu_broadcaster/imu.orientation.z",
+          "value": "{{env "NAMESPACE"}}/imu_broadcaster/imu.orientation.z",
           "enabled": true,
           "timestampMethod": "receiveTime"
         }
@@ -74,7 +74,7 @@
       "followingViewWidth": 30
     },
     "Publish!jiwd3t": {
-      "topicName": "{{env 'NAMESPACE'}}/cmd_vel",
+      "topicName": "{{env "NAMESPACE"}}/cmd_vel",
       "datatype": "geometry_msgs/msg/TwistStamped",
       "buttonText": "Test Motors",
       "buttonTooltip": "",
@@ -140,15 +140,15 @@
       "layers": {},
       "publish": {
         "type": "point",
-        "poseTopic": "{{env 'NAMESPACE'}}/move_base_simple/goal",
-        "pointTopic": "{{env 'NAMESPACE'}}/clicked_point",
-        "poseEstimateTopic": "{{env 'NAMESPACE'}}/initialpose",
+        "poseTopic": "{{env "NAMESPACE"}}/move_base_simple/goal",
+        "pointTopic": "{{env "NAMESPACE"}}/clicked_point",
+        "poseEstimateTopic": "{{env "NAMESPACE"}}/initialpose",
         "poseEstimateXDeviation": 0.5,
         "poseEstimateYDeviation": 0.5,
         "poseEstimateThetaDeviation": 0.26179939
       },
       "imageMode": {
-        "imageTopic": "{{env 'NAMESPACE'}}/oak/rgb/image_raw/compressed",
+        "imageTopic": "{{env "NAMESPACE"}}/oak/rgb/image_raw/compressed",
         "synchronize": true,
         "rotation": 0,
         "annotations": {}
@@ -291,7 +291,7 @@
           "colorMap": "turbo",
           "pointSize": 9
         },
-        "{{env 'NAMESPACE'}}/scan": {
+        "{{env "NAMESPACE"}}/scan": {
           "visible": true,
           "colorField": "intensity",
           "colorMode": "colormap",
@@ -316,7 +316,7 @@
           "url": "",
           "filePath": "",
           "parameter": "",
-          "topic": "{{env 'NAMESPACE'}}/robot_description",
+          "topic": "{{env "NAMESPACE"}}/robot_description",
           "framePrefix": "",
           "displayMode": "auto",
           "fallbackColor": "#ffffff",
@@ -405,9 +405,9 @@
       "foxglovePanelTitle": "LED2 Turn OFF"
     },
     "Joy!3rd0uxh": {
-      "topic": "{{env 'NAMESPACE'}}/cmd_vel",
+      "topic": "{{env "NAMESPACE"}}/cmd_vel",
       "publishRate": 20,
-      "stamped": "{{env 'CMD_VEL_STAMPED'}}",
+      "stamped": "{{env "CMD_VEL_STAMPED"}}",
       "advanced": false,
       "xAxis": {
         "field": "linear-x",

@@ -73,8 +73,8 @@
         "followingViewWidth": 30
       },
       "Publish!jiwd3t": {
-        "topicName": "{{env 'NAMESPACE'}}/cmd_vel",
-        "datatype": "geometry_msgs/msg/{{env 'TWIST_TYPE'}}",
+        "topicName": "{{env "NAMESPACE"}}/cmd_vel",
+        "datatype": "geometry_msgs/msg/{{env "TWIST_TYPE"}}",
         "buttonText": "Test Motors",
         "buttonTooltip": "",
         "buttonColor": "#8e5f00",
@@ -83,7 +83,7 @@
         "foxglovePanelTitle": "Test Motors"
       },
       "Publish!4gepnn0": {
-        "topicName": "{{env 'NAMESPACE'}}/cmd_ser",
+        "topicName": "{{env "NAMESPACE"}}/cmd_ser",
         "datatype": "std_msgs/msg/UInt32MultiArray",
         "buttonText": "Test Servo Left",
         "buttonTooltip": "",
@@ -93,7 +93,7 @@
         "foxglovePanelTitle": "Test Servo Left"
       },
       "Publish!4idbwgm": {
-        "topicName": "{{env 'NAMESPACE'}}/cmd_ser",
+        "topicName": "{{env "NAMESPACE"}}/cmd_ser",
         "datatype": "std_msgs/msg/UInt32MultiArray",
         "buttonText": "Test Servo Right",
         "buttonTooltip": "",
@@ -141,15 +141,15 @@
         "layers": {},
         "publish": {
           "type": "point",
-          "poseTopic": "{{env 'NAMESPACE'}}/move_base_simple/goal",
-          "pointTopic": "{{env 'NAMESPACE'}}/clicked_point",
-          "poseEstimateTopic": "{{env 'NAMESPACE'}}/initialpose",
+          "poseTopic": "{{env "NAMESPACE"}}/move_base_simple/goal",
+          "pointTopic": "{{env "NAMESPACE"}}/clicked_point",
+          "poseEstimateTopic": "{{env "NAMESPACE"}}/initialpose",
           "poseEstimateXDeviation": 0.5,
           "poseEstimateYDeviation": 0.5,
           "poseEstimateThetaDeviation": 0.26179939
         },
         "imageMode": {
-          "imageTopic": "{{env 'NAMESPACE'}}{{env 'CAMERA_TOPIC'}}",
+          "imageTopic": "{{env "NAMESPACE"}}{{env "CAMERA_TOPIC"}}",
           "synchronize": true,
           "rotation": 0,
           "annotations": {}
@@ -252,7 +252,7 @@
           }
         },
         "topics": {
-          "{{env 'NAMESPACE'}}/scan": {
+          "{{env "NAMESPACE"}}/scan": {
             "visible": true,
             "colorField": "intensity",
             "colorMode": "colormap",
@@ -271,7 +271,7 @@
             "url": "",
             "filePath": "",
             "parameter": "",
-            "topic": "{{env 'NAMESPACE'}}/robot_description",
+            "topic": "{{env "NAMESPACE"}}/robot_description",
             "framePrefix": "",
             "displayMode": "auto",
             "fallbackColor": "#ffffff",
@@ -280,9 +280,9 @@
         },
         "publish": {
           "type": "point",
-          "poseTopic": "{{env 'NAMESPACE'}}/move_base_simple/goal",
-          "pointTopic": "{{env 'NAMESPACE'}}/clicked_point",
-          "poseEstimateTopic": "{{env 'NAMESPACE'}}/initialpose",
+          "poseTopic": "{{env "NAMESPACE"}}/move_base_simple/goal",
+          "pointTopic": "{{env "NAMESPACE"}}/clicked_point",
+          "poseEstimateTopic": "{{env "NAMESPACE"}}/initialpose",
           "poseEstimateXDeviation": 0.5,
           "poseEstimateYDeviation": 0.5,
           "poseEstimateThetaDeviation": 0.26179939
@@ -360,7 +360,7 @@
         "foxglovePanelTitle": "LED2 Turn OFF"
       },
       "Teleop!yh7wcv": {
-        "topic": "{{env 'NAMESPACE'}}/cmd_vel",
+        "topic": "{{env "NAMESPACE"}}/cmd_vel",
         "publishRate": 20,
         "upButton": {
           "field": "linear-x",
@@ -379,7 +379,7 @@
           "value": -1
         },
         "foxglovePanelTitle": "Diff Drive",
-        "stamped": "{{env 'CMD_VEL_STAMPED'}}"
+        "stamped": "{{env "CMD_VEL_STAMPED"}}"
       },
       "Tab!2qhku9u": {
         "activeTabIdx": 0,
