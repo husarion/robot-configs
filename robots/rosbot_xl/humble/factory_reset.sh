@@ -1,54 +1,40 @@
 #!/bin/bash
 set -e
 
-# Source
-if [ -f "/home/husarion/helpers.sh" ]; then
-    source "/home/husarion/helpers.sh"
-    source "/home/husarion/.robot_env"
-else
-    echo "This script should be running from /home/husarion directory. Please run setup_robot_configuration to copy specific robot files."
-fi
-
 # Constants
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SNAP_LIST=(rosbot husarion-webui)
 ROBOT_MODEL=rosbot-xl
 LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot-xl.json"
+DEFAULT_CONFIGURATION="basic"
 VALID_CONFIGURATION=("basic" "telepresence" "autonomy" "manipulation" "manipulation-pro")
+
+# Source
+source "/etc/environment"
+if [ -f "$SCRIPT_DIR/../../helpers.sh" ]; then
+    source "$SCRIPT_DIR/../../helpers.sh" # Working inside repo
+else
+    source "$SCRIPT_DIR/helpers.sh" # Working on Husarion OS after setup_robot_configuration
+fi
 
 # Main
 start_time=$(date +%s)
 
 check_user
 
-select configuration in "${VALID_CONFIGURATION[@]}"; do
-    if [[ " ${VALID_CONFIGURATION[*]} " == *" $configuration "* ]]; then
-        break
-    else
-        echo "Invalid selection. Please try again."
-    fi
-done
+configuration="$1"
 
-case $configuration in
-    "basic")
-        ;;
-    "telepresence")
-        SNAP_LIST+=(husarion-depthai)
-        ;;
-    "autonomy")
-        SNAP_LIST+=(husarion-depthai husarion-rplidar)
-        ;;
-    "manipulation")
-        SNAP_LIST+=(husarion-rplidar)
-        ;;
-    "manipulation-pro")
-        SNAP_LIST+=(husarion-rplidar)
-        ;;
-    *)
-        echo "Invalid configuration selected. Exiting."
+if [[ -n "$configuration" ]]; then
+    if [[ " ${VALID_CONFIGURATIONS[@]} " =~ " ${configuration} " ]]; then
+        set_robot_env "configuration" "$configuration"
+    else
+        echo "Invalid configuration. None of the valid options (${VALID_CONFIGURATIONS[*]}) were selected."
         exit 1
-        ;;
-esac
+    fi
+else
+    echo "No configuration argument provided. Default robot configuration '${DEFAULT_CONFIGURATION}' will be used."
+    configuration="$DEFAULT_CONFIGURATION"
+fi
 
 print_header "Reinstall snaps"
 reinstall_snaps "$SNAP_VERSION" "${SNAP_LIST[@]}"

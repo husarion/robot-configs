@@ -34,7 +34,7 @@ reinstall_snaps() {
 set_robot_env() {
   local name="$1"
   local value="$2"
-  local env_file="/home/husarion/.robot_env"
+  local env_file="/etc/environment"
   [ -f "$env_file" ] || touch "$env_file"
 
   if grep -q "^$name=" "$env_file"; then

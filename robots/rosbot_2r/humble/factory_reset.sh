@@ -1,19 +1,19 @@
 #!/bin/bash
 set -e
 
-# Source
-if [ -f "/home/husarion/helpers.sh" ]; then
-    source "/home/husarion/helpers.sh"
-    source "/home/husarion/.robot_env"
-else
-    echo "This script should be running from /home/husarion directory. Please run setup_robot_configuration to copy specific robot files."
-fi
-
 # Constants
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SNAP_LIST=(rosbot husarion-astra husarion-rplidar husarion-webui)
 ROBOT_MODEL=rosbot
 LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot.json"
+
+# Source
+source "/etc/environment"
+if [ -f "$SCRIPT_DIR/../../helpers.sh" ]; then
+    source "$SCRIPT_DIR/../../helpers.sh" # Working inside repo
+else
+    source "$SCRIPT_DIR/helpers.sh" # Working on Husarion OS after setup_robot_configuration
+fi
 
 # Main
 start_time=$(date +%s)

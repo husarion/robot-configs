@@ -79,7 +79,7 @@ validate_ros_version() {
 set_robot_env() {
   local model="$1"
   local version="$2"
-  local env_file="/home/husarion/.robot_env"
+  local env_file="/etc/environment"
   [ -f "$env_file" ] || touch "$env_file"
 
   # ROBOT_MODEL_NAME
