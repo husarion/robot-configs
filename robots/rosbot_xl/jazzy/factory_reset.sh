@@ -7,7 +7,7 @@ SNAP_LIST=(rosbot husarion-webui)
 ROBOT_MODEL=rosbot-xl
 LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot-xl.json"
 DEFAULT_CONFIGURATION="basic"
-VALID_CONFIGURATION=("basic" "telepresence" "autonomy" "manipulation" "manipulation-pro")
+VALID_CONFIGURATIONS=("basic" "telepresence" "autonomy" "manipulation" "manipulation-pro")
 
 # Source
 source "/etc/environment"
@@ -32,7 +32,7 @@ if [[ -n "$configuration" ]]; then
         exit 1
     fi
 else
-    echo "No configuration argument provided. Default robot configuration '${DEFAULT_CONFIGURATION}' will be used."
+    echo -e "\033[1mWARN: No configuration argument provided. Default robot configuration '${DEFAULT_CONFIGURATION}' will be used.\033[0m"
     configuration="$DEFAULT_CONFIGURATION"
 fi
 

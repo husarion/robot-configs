@@ -38,8 +38,8 @@ set_robot_env() {
   [ -f "$env_file" ] || touch "$env_file"
 
   if grep -q "^$name=" "$env_file"; then
-    sed -i "s/^$name=.*/$name=$value/" "$env_file"
+    sudo sed -i "s/^$name=.*/$name=$value/" "$env_file"
   else
-    echo "$name=$value" >> "$env_file"
+    echo "$name=$value" | sudo tee -a "$env_file" > /dev/null
   fi
 }
