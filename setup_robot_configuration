@@ -57,8 +57,8 @@ validate_robot_model() {
 
 validate_ros_version() {
   local version="${1:-}"
-  if [[ -z "$version" && -n "$ROS_DISTRO" ]]; then
-    version="$ROS_DISTRO"
+  if [[ -z "$version" && -n "$IMAGE_TYPE" ]]; then
+    version="${IMAGE_TYPE,,}"
   fi
 
   if [[ " ${VALID_ROS_VERSIONS[*]} " == *" $version "* ]]; then
