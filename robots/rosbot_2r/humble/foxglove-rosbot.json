@@ -149,7 +149,7 @@
           "poseEstimateThetaDeviation": 0.26179939
         },
         "imageMode": {
-          "imageTopic": "{{env "NAMESPACE"}}/color/image_raw/compressed",
+          "imageTopic": "{{env "NAMESPACE"}}/camera/color/image_raw/compressed",
           "synchronize": true,
           "rotation": 0,
           "annotations": {}
@@ -220,7 +220,10 @@
           "frame:cover_link": {
             "visible": false
           },
-          "frame:slamtec_rplidar_a2_link": {
+          "frame:camera_mount_link": {
+            "visible": false
+          },
+          "frame:slamtec_rplidar_link": {
             "visible": false
           },
           "frame:laser": {

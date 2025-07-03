@@ -17,6 +17,10 @@ reinstall_snaps() {
     shift
     local snaps=("$@")
     for snap in "${snaps[@]}"; do
+        sudo snap stop "$snap" &> /dev/null || true
+    done
+
+    for snap in "${snaps[@]}"; do
         sudo snap remove "$snap"
 
         sudo snap install "$snap" --channel="$version/stable"
