@@ -253,7 +253,7 @@
           "visible": false
         },
         "frame:odom": {
-          "visible": false
+          "visible": true
         },
         "frame:camera_mount_link": {
           "visible": false
@@ -297,7 +297,7 @@
           "colorMap": "turbo",
           "pointSize": 3
         },
-        "{{env "NAMESPACE"}}/scan": {
+        "{{env "NAMESPACE"}}/scan_filtered": {
           "visible": true,
           "colorField": "intensity",
           "colorMode": "colormap",

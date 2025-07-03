@@ -30,6 +30,7 @@ sudo rosbot.flash
 
 print_header "Setting up Astra snap"
 sudo snap connect husarion-astra:shm-plug husarion-astra:shm-slot
+sudo snap set husarion-astra driver.name=camera
 
 print_header "Setting up RPLIDAR snap"
 sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot

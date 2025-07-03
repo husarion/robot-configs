@@ -149,7 +149,7 @@
           "poseEstimateThetaDeviation": 0.26179939
         },
         "imageMode": {
-          "imageTopic": "{{env "NAMESPACE"}}{{env "CAMERA_TOPIC"}}",
+          "imageTopic": "{{env "NAMESPACE"}}/color/image_raw/compressed",
           "synchronize": true,
           "rotation": 0,
           "annotations": {}
@@ -254,11 +254,11 @@
             "visible": false
           },
           "frame:odom": {
-            "visible": false
+            "visible": true
           }
         },
         "topics": {
-          "{{env "NAMESPACE"}}/scan": {
+          "{{env "NAMESPACE"}}/scan_filtered": {
             "visible": true,
             "colorField": "intensity",
             "colorMode": "colormap",

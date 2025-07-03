@@ -176,7 +176,7 @@
         }
       },
       "topics": {
-        "{{env "NAMESPACE"}}/scan": {
+        "{{env "NAMESPACE"}}/scan_filtered": {
           "visible": true,
           "colorField": "intensity",
           "colorMode": "colormap",
