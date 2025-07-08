@@ -160,7 +160,7 @@ network_setup() {
 check_root
 
 print_header "Resizing the file system"
-resize_filesystem $@
+resize_filesystem
 
 print_header "Validation and configuration"
 check_args "$@"
