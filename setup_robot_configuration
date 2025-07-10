@@ -94,6 +94,9 @@ else
 fi
 
 echo "ROS version: ${ros_version}"
+if [[ "$ros_version" == "jazzy" || "$ros_version" == "humble" ]]; then
+  ros_version="ros2_${ros_version}"
+fi
 
 # ========================================
 # Check the robot model
@@ -123,7 +126,8 @@ else
   fi
 
   echo "Robot model: ${robot_model}"
-  if [[ "$version" == "ros2_jazzy" || "$version" == "ros2_humble" ]]; then
+
+  if [[ "$ros_version" == "ros2_jazzy" || "$ros_version" == "ros2_humble" ]]; then
     ros_distro="${ros_version#ros2_}"  # Remove 'ros2_' prefix for compatibility
   fi
   set_robot_env "$robot_model" "$ros_distro"
