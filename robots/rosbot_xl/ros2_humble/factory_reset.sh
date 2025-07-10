@@ -6,10 +6,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SNAP_LIST=(rosbot husarion-webui)
 ROBOT_MODEL=rosbot-xl
 LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot-xl.json"
-DEFAULT_CONFIGURATION="basic"
 VALID_CONFIGURATIONS=("basic" "telepresence" "autonomy" "manipulation" "manipulation-pro")
 
 # Source
+source "/etc/environment"
 if [ -f "$SCRIPT_DIR/../../helpers.sh" ]; then
     source "$SCRIPT_DIR/../../helpers.sh" # Working inside repo
 else
@@ -25,14 +25,19 @@ configuration="$1"
 
 if [[ -n "$configuration" ]]; then
     if [[ " ${VALID_CONFIGURATIONS[@]} " =~ " ${configuration} " ]]; then
-        set_robot_env "configuration" "$configuration"
+        set_robot_env "ROBOT_CONFIGURATION" "$configuration"
     else
         echo "Invalid configuration. None of the valid options (${VALID_CONFIGURATIONS[*]}) were selected."
         exit 1
     fi
 else
-    echo -e "\033[1mWARN: No configuration argument provided. Default robot configuration '${DEFAULT_CONFIGURATION}' will be used.\033[0m"
-    configuration="$DEFAULT_CONFIGURATION"
+    if [[ -n "$ROBOT_CONFIGURATION" ]]; then
+        echo -e "Default robot configuration '${ROBOT_CONFIGURATION}' will be used."
+        configuration="$ROBOT_CONFIGURATION"
+    else
+        echo -e "WARN: Please provide a configuration argument from valid options: ${VALID_CONFIGURATIONS[*]}"
+        exit 1
+    fi
 fi
 
 print_header "Reinstall snaps"

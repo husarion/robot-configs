@@ -18,6 +18,7 @@ reinstall_snaps() {
         echo "Error: SNAP_VERSION is not set in /etc/environment. Did you use setup_robot_configuration script?"
         exit 1
     fi
+
     local snaps=("$@")
     for snap in "${snaps[@]}"; do
         sudo snap stop "$snap" &> /dev/null || true
