@@ -13,8 +13,11 @@ print_header() {
 }
 
 reinstall_snaps() {
-    local version="$1"
-    shift
+    source /etc/environment
+    if [ -z "$SNAP_VERSION" ]; then
+        echo "Error: SNAP_VERSION is not set in /etc/environment. Did you use setup_robot_configuration script?"
+        exit 1
+    fi
     local snaps=("$@")
     for snap in "${snaps[@]}"; do
         sudo snap stop "$snap" &> /dev/null || true
@@ -23,7 +26,7 @@ reinstall_snaps() {
     for snap in "${snaps[@]}"; do
         sudo snap remove "$snap"
 
-        sudo snap install "$snap" --channel="$version/stable"
+        sudo snap install "$snap" --channel="$SNAP_VERSION"
         sudo snap set "$snap" \
             ros.transport=udp-lo \
             ros.localhost-only='' \

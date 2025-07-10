@@ -8,7 +8,6 @@ ROBOT_MODEL=rosbot
 LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot.json"
 
 # Source
-source "/etc/environment"
 if [ -f "$SCRIPT_DIR/../../helpers.sh" ]; then
     source "$SCRIPT_DIR/../../helpers.sh" # Working inside repo
 else
@@ -21,7 +20,7 @@ start_time=$(date +%s)
 check_user
 
 print_header "Reinstall snaps"
-reinstall_snaps "$SNAP_VERSION" "${SNAP_LIST[@]}"
+reinstall_snaps "${SNAP_LIST[@]}"
 
 print_header "Setting up ROSbot snap"
 sudo /var/snap/rosbot/common/post_install.sh
