@@ -33,7 +33,7 @@ sudo snap set husarion-astra driver.name=camera
 
 print_header "Setting up RPLIDAR snap"
 sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
-sudo snap set husarion-rplidar configuration=a2
+sudo snap set husarion-rplidar configuration=a2m12
 
 print_header "Setting up WebUI snap"
 sudo cp $LAYOUT_FILE /var/snap/husarion-webui/common/
