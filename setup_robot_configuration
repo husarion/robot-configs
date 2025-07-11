@@ -1,5 +1,34 @@
 #!/bin/bash
 
+# Constants
+SCRIPT_NAME="$(basename "$0")"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+VALID_ROS_VERSIONS=("noetic" "jazzy" "humble" "ros_noetic" "ros2_jazzy" "ros2_humble")
+VALID_ROBOT_MODELS=("rosbot_xl" "rosbot_3" "rosbot_2r" "rosbot_2_pro" "panther" "lynx" "husarion_ugv")
+
+# Functions
+set_robot_env() {
+  local model="$1"
+  local version="$2"
+  local env_file="/etc/environment"
+  [ -f "$env_file" ] || touch "$env_file"
+
+  # ROBOT_MODEL_NAME
+  if grep -q "^ROBOT_MODEL_NAME=" "$env_file"; then
+    sed -i "s/^ROBOT_MODEL_NAME=.*/ROBOT_MODEL_NAME=$model/" "$env_file"
+  else
+    echo "ROBOT_MODEL_NAME=$model" >> "$env_file"
+  fi
+
+  # SNAP_VERSION
+  if grep -q "^SNAP_VERSION=" "$env_file"; then
+    sed -i "s/^SNAP_VERSION=.*/SNAP_VERSION=$version/" "$env_file"
+  else
+    echo "SNAP_VERSION=$version" >> "$env_file"
+  fi
+}
+
+
 # Check if running with root privileges
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root"
@@ -47,8 +76,6 @@ if [ -z "$2" ]; then
     exit 1
   fi
 else
-  VALID_ROS_VERSIONS=("ros2_jazzy" "ros2_humble")
-
   valid=false
   for version in "${VALID_ROS_VERSIONS[@]}"; do
     if [[ "$2" == "$version" ]]; then
@@ -67,22 +94,21 @@ else
 fi
 
 echo "ROS version: ${ros_version}"
+if [[ "$ros_version" == "jazzy" || "$ros_version" == "humble" ]]; then
+  ros_version="ros2_${ros_version}"
+fi
 
 # ========================================
 # Check the robot model
 # ========================================
 
 # Get the directory where the script itself is located
-# SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # this one does not work with simlinks
-SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 
 if [ -z "$1" ]; then
   echo ""
   echo "Using default configuration"
   exit 0
 else
-  VALID_ROBOT_MODELS=("rosbot_xl" "rosbot_3" "rosbot_2r" "rosbot_2_pro" "panther" "lynx" "husarion_ugv")
-
   valid=false
   for model in "${VALID_ROBOT_MODELS[@]}"; do
     if [[ "$1" == "$model" ]]; then
@@ -101,12 +127,24 @@ else
 
   echo "Robot model: ${robot_model}"
 
-  if [[ "$robot_model" == "lynx" || "$robot_model" == "panther" ]]; then
-    robot_model="husarion_ugv"
+  if [[ "$ros_version" == "ros2_jazzy" || "$ros_version" == "ros2_humble" ]]; then
+    ros_distro="${ros_version#ros2_}"  # Remove 'ros2_' prefix for compatibility
   fi
+  set_robot_env "$robot_model" "$ros_distro"
 
-  [ -d $SCRIPT_DIR/robots/${robot_model}/${ros_version} ] && cp -rp $SCRIPT_DIR/robots/${robot_model}/${ros_version}/* /home/husarion
-  bash $SCRIPT_DIR/robots/${robot_model}/custom_config.sh
+  folder="$robot_model"
+
+  [[ "$model" == "lynx" || "$model" == "panther" ]] && folder="husarion_ugv"
+
+  config_path="$SCRIPT_DIR/robots/$folder/$ros_version"
+  if [[ -d "$config_path" ]]; then
+    cp -rp "$SCRIPT_DIR/robots/helpers.sh" /home/husarion/
+    cp -rp "$config_path/"* /home/husarion/
+    bash "$SCRIPT_DIR/robots/$folder/custom_config.sh" "$model" "$ros_version"
+  else
+    echo "Warning: Config dir \"$config_path\" not found. Skipping robot-specific setup."
+    exit
+  fi
 
   ## install motd
   ARCH=$(uname -m)
