@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Constants
 SCRIPT_NAME="$(basename "$0")"
@@ -7,136 +8,95 @@ VALID_ROS_VERSIONS=("noetic" "jazzy" "humble" "ros_noetic" "ros2_jazzy" "ros2_hu
 VALID_ROBOT_MODELS=("rosbot_xl" "rosbot_3" "rosbot_2r" "rosbot_2_pro" "panther" "lynx" "husarion_ugv")
 
 # Functions
-set_robot_env() {
-  local model="$1"
-  local version="$2"
-  local env_file="/etc/environment"
-  [ -f "$env_file" ] || touch "$env_file"
-
-  # ROBOT_MODEL_NAME
-  if grep -q "^ROBOT_MODEL_NAME=" "$env_file"; then
-    sed -i "s/^ROBOT_MODEL_NAME=.*/ROBOT_MODEL_NAME=$model/" "$env_file"
+check_root() {
+  if [[ "$EUID" -eq 0 ]]; then
+    return 0
   else
-    echo "ROBOT_MODEL_NAME=$model" >> "$env_file"
-  fi
-
-  # SNAP_VERSION
-  if grep -q "^SNAP_VERSION=" "$env_file"; then
-    sed -i "s/^SNAP_VERSION=.*/SNAP_VERSION=$version/" "$env_file"
-  else
-    echo "SNAP_VERSION=$version" >> "$env_file"
+    echo "Error: This script must be run as root." >&2
+    return 1
   fi
 }
 
+print_header() {
+  echo -e "\n$1"
+  echo "---------------------------------------"
+}
 
-# Check if running with root privileges
-if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root"
-   exit 1
-fi
+resize_filesystem() {
+  echo "Resizing the file system..."
+  local root_device partition_suffix partition_number
+  root_device=/dev/$(lsblk -no PKNAME,MOUNTPOINT | awk '$2 == "/" {print $1}')
+  partition_suffix=$(lsblk -no KNAME,MOUNTPOINT | awk '$2 == "/" {gsub(/.*[^0-9]/, "", $1); print $1}')
 
-echo "---------------------------------------"
-echo "Starting the configuration script"
-echo "---------------------------------------"
-
-# resize fs
-echo "Resizing the file system"
-
-root_device=/dev/$(lsblk -no PKNAME,MOUNTPOINT | awk '$2 == "/" {print $1}')
-partition_suffix=$(lsblk -no KNAME,MOUNTPOINT | awk '$2 == "/" {gsub(/.*[^0-9]/, "", $1); print $1}')
-
-if [[ $root_device == /dev/sd* ]]; then
-  partition_number="${partition_suffix}"
-else
-  partition_number="p${partition_suffix}"
-fi
-
-sudo growpart ${root_device} ${partition_suffix}
-sudo resize2fs ${root_device}${partition_number}
-
-# Parse command line arguments
-if [[ $# -gt 2 ]]; then
-    echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
-    exit 0
-fi
-
-# ========================================
-# Check ROS version
-# ========================================
-
-if [ -z "$2" ]; then
-  if [ "$IMAGE_TYPE" == "ROS2_JAZZY" ]; then
-    ros_version="ros2_jazzy"
-  elif [ "$IMAGE_TYPE" == "ROS2_HUMBLE" ]; then
-    ros_version="ros2_humble"
-  elif [ "$IMAGE_TYPE" == "ROS2_FOXY" ]; then
-    ros_version="ros2_humble"
+  if [[ $root_device == /dev/sd* ]]; then
+    partition_number="$partition_suffix"
   else
-    echo "Error: No ROS version specified"
+    partition_number="p$partition_suffix"
+  fi
+
+  sudo growpart ${root_device} ${partition_suffix} || true
+  sudo resize2fs ${root_device}${partition_number}
+}
+
+check_args() {
+  [[ $# -eq 2 || ($# -eq 1 && -n "${IMAGE_TYPE:-}") ]] && return 0
+  [[ $# -eq 0 ]] && echo "Robot model unspecified. Use simple configuration." && return 0
+  echo "Usage: $SCRIPT_NAME <robot_model> [ros_version]"
+  exit 1
+}
+
+validate_robot_model() {
+  local model="$1"
+  if [[ -z "$model" || ! " ${VALID_ROBOT_MODELS[*]} " =~ " $model " ]]; then
+    echo "Error: Invalid robot model: $model. Valid: ${VALID_ROBOT_MODELS[*]}" >&2
+    echo "Usage: $SCRIPT_NAME <robot_model> [ros_version]" >&2
     exit 1
   fi
-else
-  valid=false
-  for version in "${VALID_ROS_VERSIONS[@]}"; do
-    if [[ "$2" == "$version" ]]; then
-      valid=true
-      ros_version="$2"
-      break
+  echo "$model"
+}
+
+validate_ros_version() {
+  local version="${1:-}"
+  if [[ -z "$version" && -n "$IMAGE_TYPE" ]]; then
+    version="${IMAGE_TYPE,,}"
+  fi
+
+  if [[ " ${VALID_ROS_VERSIONS[*]} " == *" $version "* ]]; then
+    if [[ "$version" == "jazzy" || "$version" == "humble" ]]; then
+      version="ros2_${version}"
     fi
-  done
-
-  if ! $valid; then
-    echo "Error: Invalid ROS version specified: $2"
-    echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
-    echo "Valid ROS versions: ${VALID_ROS_VERSIONS[*]}"
-    exit 1
-  fi
-fi
-
-echo "ROS version: ${ros_version}"
-if [[ "$ros_version" == "jazzy" || "$ros_version" == "humble" ]]; then
-  ros_version="ros2_${ros_version}"
-fi
-
-# ========================================
-# Check the robot model
-# ========================================
-
-# Get the directory where the script itself is located
-
-if [ -z "$1" ]; then
-  echo ""
-  echo "Using default configuration"
-  exit 0
-else
-  valid=false
-  for model in "${VALID_ROBOT_MODELS[@]}"; do
-    if [[ "$1" == "$model" ]]; then
-      valid=true
-      robot_model="$1"
-      break
+    if [[ "$version" == "noetic" ]]; then
+      version="ros_${version}"
     fi
-  done
-
-  if ! $valid; then
-    echo "Error: Invalid robot model: $1"
-    echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
-    echo "Valid robot models: ${VALID_ROBOT_MODELS[*]}"
+    echo "$version"
+  else
+    echo "Error: Invalid ROS version: $version. Valid: ${VALID_ROS_VERSIONS[*]}" >&2
+    echo "Usage: $SCRIPT_NAME <robot_model> [ros_version]" >&2
     exit 1
   fi
+}
 
-  echo "Robot model: ${robot_model}"
+set_robot_env() {
+  local name="$1"
+  local value="$2"
+  local env_file="/etc/environment"
+  [ -f "$env_file" ] || touch "$env_file"
 
-  if [[ "$ros_version" == "ros2_jazzy" || "$ros_version" == "ros2_humble" ]]; then
-    ros_distro="${ros_version#ros2_}"  # Remove 'ros2_' prefix for compatibility
+  if grep -q "^$name=" "$env_file"; then
+    sudo sed -i "s/^$name=.*/$name=$value/" "$env_file"
+  else
+    echo "$name=$value" | sudo tee -a "$env_file" > /dev/null
   fi
-  set_robot_env "$robot_model" "$ros_distro"
+}
 
-  folder="$robot_model"
+robot_config() {
+  local model="$1"
+  local ros_version="$2"
+  local folder="$model"
 
   [[ "$model" == "lynx" || "$model" == "panther" ]] && folder="husarion_ugv"
 
-  config_path="$SCRIPT_DIR/robots/$folder/$ros_version"
+  local config_path="$SCRIPT_DIR/robots/$folder/$ros_version"
   if [[ -d "$config_path" ]]; then
     cp -rp "$SCRIPT_DIR/robots/helpers.sh" /home/husarion/
     cp -rp "$config_path/"* /home/husarion/
@@ -145,55 +105,79 @@ else
     echo "Warning: Config dir \"$config_path\" not found. Skipping robot-specific setup."
     exit
   fi
+}
 
-  ## install motd
-  ARCH=$(uname -m)
+setup_motd() {
+  local folder="$1"
+  local arch
+  arch=$(uname -m)
 
-  # Map uname -m to .deb architecture
-  if [[ "$ARCH" == "x86_64" ]]; then
-    DEB_ARCH="amd64"
-  elif [[ "$ARCH" == "aarch64" ]]; then
-    DEB_ARCH="arm64"
-  else
-    echo "Unsupported architecture: $ARCH"
-    exit 1
+  local deb_arch
+  case "$arch" in
+    x86_64)  deb_arch="amd64" ;;
+    aarch64) deb_arch="arm64" ;;
+    *) echo "Unsupported architecture: $arch"; exit 1 ;;
+  esac
+
+  local deb_file
+  deb_file=$(find "$SCRIPT_DIR/robots/$folder" -maxdepth 1 -type f -name "*husarion-motd-*-${deb_arch}.deb" | head -n 1)
+
+  [[ -z "$deb_file" ]] && { echo "Error: No .deb file for arch $deb_arch"; exit 1; }
+
+  echo "Installing MOTD package: $deb_file"
+  dpkg -i "$deb_file" > /dev/null
+}
+
+network_setup() {
+  local folder="$1"
+
+  echo "Resetting Husarnet IPv6 and network configuration"
+  cp "$SCRIPT_DIR/robots/$folder/netplan.yaml" /etc/netplan/01-network-manager-all.yaml
+  chmod 600 /etc/netplan/01-network-manager-all.yaml
+
+  rm -rf /var/lib/husarnet
+
+  echo "Generating new SSH credentials"
+  : > /root/.ssh/authorized_keys
+  : > /root/.ssh/known_hosts
+  : > /home/husarion/.ssh/authorized_keys
+  : > /home/husarion/.ssh/known_hosts
+  rm -rf /etc/ssh/ssh_host_*
+  ssh-keygen -A
+}
+
+# Main
+check_root
+
+print_header "Resizing the file system"
+resize_filesystem
+
+print_header "Validation and configuration"
+check_args "$@"
+if [[ -n "${1:-}" ]]; then
+  robot_model=$(validate_robot_model "$1")
+  ros_version=$(validate_ros_version "${2:-}")
+  echo "Robot model: $robot_model"
+  echo "ROS version: $ros_version"
+  robot_config "$robot_model" "$ros_version"
+
+  robot_folder="$robot_model"
+  [[ "$robot_model" == "lynx" || "$robot_model" == "panther" ]] && robot_folder="husarion_ugv"
+
+  print_header "Setting up MOTD"
+  setup_motd "$robot_folder"
+
+  print_header "Resetting network and SSH credentials"
+  network_setup "$robot_folder"
+
+  if [[ "$ros_version" == "ros2_jazzy" || "$ros_version" == "ros2_humble" ]]; then
+    snap_version="${ros_version#ros2_}"  # Remove 'ros2_' prefix for compatibility
   fi
-
-  # Look for the matching .deb file using a regex pattern
-  DEB_FILE=$(find "$SCRIPT_DIR/robots/${robot_model}" -maxdepth 1 -type f -regex ".*husarion-motd-.*-${DEB_ARCH}\.deb" | head -n 1)
-
-  if [[ -z "$DEB_FILE" ]]; then
-    echo "Error: No matching .deb file found for architecture: $DEB_ARCH"
-    exit 1
+  if [[ "$ros_version" == "ros_noetic" ]]; then
+    snap_version="${ros_version#ros_}"  # Remove 'ros_' prefix for compatibility
   fi
-
-  echo "Installing motd package: $DEB_FILE"
-  # Install the package
-  sudo dpkg -i "$DEB_FILE"
+  set_robot_env SNAP_VERSION "$snap_version"
 fi
 
-# mkdir /home/husarion/.ros
-# chown husarion:husarion /home/husarion/.ros
-
-echo "Resetting the network configuration"
-cp $SCRIPT_DIR/robots/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
-sudo chmod 600 /etc/netplan/01-network-manager-all.yaml
-
-# Resetting Husarnet IPv6 address
-echo "Resetting Husarnet IPv6 address"
-sudo rm -rf /var/lib/husarnet
-
-# Generating new SSH credentials
-echo "Generating new SSH credentials"
-sudo echo "" > /root/.ssh/authorized_keys
-sudo echo "" > /root/.ssh/known_hosts
-sudo echo "" > /home/husarion/.ssh/authorized_keys
-sudo echo "" > /home/husarion/.ssh/known_hosts
-sudo rm -rf /etc/ssh/ssh_host_*
-
-ssh-keygen -A
-# systemctl restart ssh.service
-
-# Print success message
-echo ""
-echo "Configuration files copied successfully for robot model \"$robot_model\" and ROS version \"$ros_version\""
+echo
+print_header "✅ Configuration completed!"

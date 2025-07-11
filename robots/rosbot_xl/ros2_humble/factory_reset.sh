@@ -8,6 +8,16 @@ ROBOT_MODEL=rosbot-xl
 LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot-xl.json"
 VALID_CONFIGURATIONS=("basic" "telepresence" "autonomy" "manipulation" "manipulation-pro")
 
+# Functions
+print_usage() {
+echo -e "\e[1mInvalid configuration.\e[0m"
+  echo "Usage: $0 <configuration>"
+  echo "Valid configurations:"
+  for config in "${VALID_CONFIGURATIONS[@]}"; do
+      echo "  - $config"
+  done  
+}
+
 # Source
 source "/etc/environment"
 if [ -f "$SCRIPT_DIR/../../helpers.sh" ]; then
@@ -27,7 +37,7 @@ if [[ -n "$configuration" ]]; then
     if [[ " ${VALID_CONFIGURATIONS[@]} " =~ " ${configuration} " ]]; then
         set_robot_env "ROBOT_CONFIGURATION" "$configuration"
     else
-        echo "Invalid configuration. None of the valid options (${VALID_CONFIGURATIONS[*]}) were selected."
+        print_usage
         exit 1
     fi
 else
@@ -35,7 +45,7 @@ else
         echo -e "Default robot configuration '${ROBOT_CONFIGURATION}' will be used."
         configuration="$ROBOT_CONFIGURATION"
     else
-        echo -e "WARN: Please provide a configuration argument from valid options: ${VALID_CONFIGURATIONS[*]}"
+        print_usage
         exit 1
     fi
 fi
