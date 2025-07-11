@@ -62,11 +62,11 @@ validate_ros_version() {
   fi
 
   if [[ " ${VALID_ROS_VERSIONS[*]} " == *" $version "* ]]; then
-    if [[ "$ros_version" == "jazzy" || "$ros_version" == "humble" ]]; then
-      ros_version="ros2_${ros_version}"
+    if [[ "$version" == "jazzy" || "$version" == "humble" ]]; then
+      version="ros2_${version}"
     fi
     if [[ "$version" == "noetic" ]]; then
-      ros_version="ros_${ros_version}"
+      version="ros_${version}"
     fi
     echo "$version"
   else
