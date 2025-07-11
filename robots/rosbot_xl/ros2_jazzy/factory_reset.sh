@@ -27,7 +27,10 @@ if [[ -n "$configuration" ]]; then
     if [[ " ${VALID_CONFIGURATIONS[@]} " =~ " ${configuration} " ]]; then
         set_robot_env "ROBOT_CONFIGURATION" "$configuration"
     else
-        echo "Invalid configuration. None of the valid options (${VALID_CONFIGURATIONS[*]}) were selected."
+        echo -e "\e[1mInvalid configuration name. Please provide a configuration argument from valid options:\e[0m"
+        for config in "${VALID_CONFIGURATIONS[@]}"; do
+            echo "  - $config"
+        done
         exit 1
     fi
 else
@@ -35,10 +38,12 @@ else
         echo -e "Default robot configuration '${ROBOT_CONFIGURATION}' will be used."
         configuration="$ROBOT_CONFIGURATION"
     else
-        echo -e "WARN: Please provide a configuration argument from valid options: ${VALID_CONFIGURATIONS[*]}"
+        echo -e "\e[1mPlease provide a configuration argument from valid options:\e[0m"
+        for config in "${VALID_CONFIGURATIONS[@]}"; do
+            echo "  - $config"
+        done
         exit 1
-    fi
-fi
+    f
 
 print_header "Reinstall snaps"
 reinstall_snaps "${SNAP_LIST[@]}"
