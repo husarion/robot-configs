@@ -50,6 +50,18 @@ else
     fi
 fi
 
+case $configuration in
+    "telepresence")
+        SNAP_LIST+=(husarion-depthai)
+        ;;
+    "autonomy")
+        SNAP_LIST+=(husarion-depthai husarion-rplidar)
+        ;;
+    "manipulation"|"manipulation-pro")
+        SNAP_LIST+=(husarion-rplidar)
+        ;;
+esac
+
 print_header "Reinstall snaps"
 reinstall_snaps "${SNAP_LIST[@]}"
 
