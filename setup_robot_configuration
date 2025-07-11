@@ -77,23 +77,15 @@ validate_ros_version() {
 }
 
 set_robot_env() {
-  local model="$1"
-  local version="$2"
+  local name="$1"
+  local value="$2"
   local env_file="/etc/environment"
   [ -f "$env_file" ] || touch "$env_file"
 
-  # ROBOT_MODEL_NAME
-  if grep -q "^ROBOT_MODEL_NAME=" "$env_file"; then
-    sed -i "s/^ROBOT_MODEL_NAME=.*/ROBOT_MODEL_NAME=$model/" "$env_file"
+  if grep -q "^$name=" "$env_file"; then
+    sudo sed -i "s/^$name=.*/$name=$value/" "$env_file"
   else
-    echo "ROBOT_MODEL_NAME=$model" >> "$env_file"
-  fi
-
-  # SNAP_VERSION
-  if grep -q "^SNAP_VERSION=" "$env_file"; then
-    sed -i "s/^SNAP_VERSION=.*/SNAP_VERSION=$version/" "$env_file"
-  else
-    echo "SNAP_VERSION=$version" >> "$env_file"
+    echo "$name=$value" | sudo tee -a "$env_file" > /dev/null
   fi
 }
 
@@ -169,7 +161,16 @@ if [[ -n "${1:-}" ]]; then
   ros_version=$(validate_ros_version "${2:-}")
   echo "Robot model: $robot_model"
   echo "ROS version: $ros_version"
-  set_robot_env "$robot_model" "$ros_version"
+
+  if [[ "$ros_version" == "ros2_jazzy" || "$ros_version" == "ros2_humble" ]]; then
+    snap_version="${ros_version#ros2_}"  # Remove 'ros2_' prefix for compatibility
+  fi
+  if [[ "$ros_version" == "ros_noetic" ]]; then
+    snap_version="${ros_version#ros_}"  # Remove 'ros_' prefix for compatibility
+  fi
+
+  set_robot_env ROBOT_MODEL_NAME "$robot_model"
+  set_robot_env SNAP_VERSION "$snap_version"
   robot_config "$robot_model" "$ros_version"
 
   print_header "Setting up MOTD"
