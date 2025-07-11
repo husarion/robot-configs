@@ -108,7 +108,7 @@ robot_config() {
 }
 
 setup_motd() {
-  local model="$1"
+  local folder="$1"
   local arch
   arch=$(uname -m)
 
@@ -120,7 +120,7 @@ setup_motd() {
   esac
 
   local deb_file
-  deb_file=$(find "$SCRIPT_DIR/robots/$model" -maxdepth 1 -type f -name "*husarion-motd-*-${deb_arch}.deb" | head -n 1)
+  deb_file=$(find "$SCRIPT_DIR/robots/$folder" -maxdepth 1 -type f -name "*husarion-motd-*-${deb_arch}.deb" | head -n 1)
 
   [[ -z "$deb_file" ]] && { echo "Error: No .deb file for arch $deb_arch"; exit 1; }
 
@@ -129,9 +129,7 @@ setup_motd() {
 }
 
 network_setup() {
-  local model="$1"
-  local folder="$model"
-  [[ "$model" == "lynx" || "$model" == "panther" ]] && folder="husarion_ugv"
+  local folder="$1"
 
   echo "Resetting Husarnet IPv6 and network configuration"
   cp "$SCRIPT_DIR/robots/$folder/netplan.yaml" /etc/netplan/01-network-manager-all.yaml
@@ -161,6 +159,16 @@ if [[ -n "${1:-}" ]]; then
   ros_version=$(validate_ros_version "${2:-}")
   echo "Robot model: $robot_model"
   echo "ROS version: $ros_version"
+  robot_config "$robot_model" "$ros_version"
+
+  robot_folder="$robot_model"
+  [[ "$robot_model" == "lynx" || "$robot_model" == "panther" ]] && robot_folder="husarion_ugv"
+
+  print_header "Setting up MOTD"
+  setup_motd "$robot_folder"
+
+  print_header "Resetting network and SSH credentials"
+  network_setup "$robot_folder"
 
   if [[ "$ros_version" == "ros2_jazzy" || "$ros_version" == "ros2_humble" ]]; then
     snap_version="${ros_version#ros2_}"  # Remove 'ros2_' prefix for compatibility
@@ -168,16 +176,7 @@ if [[ -n "${1:-}" ]]; then
   if [[ "$ros_version" == "ros_noetic" ]]; then
     snap_version="${ros_version#ros_}"  # Remove 'ros_' prefix for compatibility
   fi
-
-  set_robot_env ROBOT_MODEL_NAME "$robot_model"
   set_robot_env SNAP_VERSION "$snap_version"
-  robot_config "$robot_model" "$ros_version"
-
-  print_header "Setting up MOTD"
-  setup_motd "$robot_model"
-
-  print_header "Resetting network and SSH credentials"
-  network_setup "$robot_model"
 fi
 
 echo
