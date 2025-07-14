@@ -3,7 +3,7 @@ set -e
 
 # Constants
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SNAP_LIST=(rosbot husarion-depthai husarion-rplidar husarion-webui)
+SNAP_LIST=(rosbot husarion-astra husarion-rplidar husarion-webui)
 ROBOT_MODEL=rosbot
 LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot.json"
 
@@ -27,13 +27,13 @@ sudo /var/snap/rosbot/common/post_install.sh
 sudo snap set rosbot driver.robot-model=$ROBOT_MODEL
 sudo rosbot.flash
 
-print_header "Setting up DepthAI snap"
-sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
-sudo snap set husarion-depthai driver.parent-frame=camera_mount_link
+print_header "Setting up Astra snap"
+sudo snap connect husarion-astra:shm-plug husarion-astra:shm-slot
+sudo snap set husarion-astra driver.name=camera
 
 print_header "Setting up RPLIDAR snap"
 sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
-sudo snap set husarion-rplidar configuration=s2
+sudo snap set husarion-rplidar configuration=a2m12
 
 print_header "Setting up WebUI snap"
 sudo cp $LAYOUT_FILE /var/snap/husarion-webui/common/

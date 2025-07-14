@@ -1,95 +1,183 @@
 #!/bin/bash
+set -euo pipefail
 
-# Check if running with root privileges
-if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
-   exit 1
-fi
+# Constants
+SCRIPT_NAME="$(basename "$0")"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+VALID_ROS_VERSIONS=("noetic" "jazzy" "humble" "ros_noetic" "ros2_jazzy" "ros2_humble")
+VALID_ROBOT_MODELS=("rosbot_xl" "rosbot_3" "rosbot_2r" "rosbot_2_pro" "panther" "lynx" "husarion_ugv")
 
-# resize fs
-echo "Resizing the file system"
-
-root_device=/dev/$(lsblk -no PKNAME,MOUNTPOINT | awk '$2 == "/" {print $1}')
-partition_suffix=$(lsblk -no KNAME,MOUNTPOINT | awk '$2 == "/" {gsub(/.*[^0-9]/, "", $1); print $1}')
-
-if [[ $root_device == /dev/sd* ]]; then
-  partition_number="${partition_suffix}"
-else
-  partition_number="p${partition_suffix}"
-fi
-
-sudo growpart ${root_device} ${partition_suffix}
-sudo resize2fs ${root_device}${partition_number}
-
-# Parse command line arguments
-if [[ $# -gt 2 ]]; then
-    echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
-    exit 0
-fi
-
-if [ -z "$2" ]; then
-  if [ "$IMAGE_TYPE" == "VULCANEXUS_HUMBLE" ]; then
-    ros_version="vulcanexus_humble"
-  elif [ "$IMAGE_TYPE" == "ROS2_JAZZY" ]; then
-    ros_version="ros2_jazzy"
-  elif [ "$IMAGE_TYPE" == "ROS2_HUMBLE" ]; then
-    ros_version="ros2_humble"
-  elif [ "$IMAGE_TYPE" == "ROS2_FOXY" ]; then
-    ros_version="ros2_humble"
-  elif [ "$IMAGE_TYPE" == "ROS_NOETIC" ]; then
-    ros_version="ros_noetic"
+# Functions
+check_root() {
+  if [[ "$EUID" -eq 0 ]]; then
+    return 0
   else
-    echo "Error: No ROS version specified"
-    exit 1
+    echo "Error: This script must be run as root." >&2
+    return 1
   fi
-else
-  if [ "$2" == "vulcanexus_humble" ] || [ "$2" == "ros2_jazzy" ] || [ "$2" == "ros2_humble" ] || [ "$2" == "ros_noetic" ]; then
-    ros_version="$2"
-  else
-    echo "Error: Invalid ROS version specified: $2"
-    echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
-    exit 1
-  fi
-fi
+}
 
-echo "ROS version: ${ros_version}"
+print_header() {
+  echo -e "\n$1"
+  echo "---------------------------------------"
+}
 
-if [ -z "$1" ]; then
-  echo ""
-  echo "Using default configuration"
-  exit 0
-else
-  if [ "$1" == "rosbot_xl" ] || [ "$1" == "rosbot_3" ] || [ "$1" == "rosbot_2r" ] || [ "$1" == "rosbot_2_pro" ] || [ "$1" == "panther" ]; then
-    robot_model="$1"
+resize_filesystem() {
+  echo "Resizing the file system..."
+  local root_device partition_suffix partition_number
+  root_device=/dev/$(lsblk -no PKNAME,MOUNTPOINT | awk '$2 == "/" {print $1}')
+  partition_suffix=$(lsblk -no KNAME,MOUNTPOINT | awk '$2 == "/" {gsub(/.*[^0-9]/, "", $1); print $1}')
+
+  if [[ $root_device == /dev/sd* ]]; then
+    partition_number="$partition_suffix"
   else
-    echo "Error: Invalid robot model: $1"
-    echo "Usage: $(basename "$0") ROBOT_MODEL ROS_VERSION"
-    exit 1
+    partition_number="p$partition_suffix"
   fi
 
-  echo "Robot model: ${robot_model}"
+  sudo growpart ${root_device} ${partition_suffix} || true
+  sudo resize2fs ${root_device}${partition_number}
+}
 
-  cp -rp /etc/husarion/robot_configs/${robot_model}/${ros_version}/* /home/husarion
-  dpkg -i /etc/husarion/robot_configs/${robot_model}/motd_$(uname -m).deb
-  cp /etc/husarion/robot_configs/${robot_model}/netplan.yaml /etc/netplan/01-network-manager-all.yaml
-  bash /usr/lib/husarion/custom_config_${robot_model}.sh
+check_args() {
+  [[ $# -eq 2 || ($# -eq 1 && -n "${IMAGE_TYPE:-}") ]] && return 0
+  [[ $# -eq 0 ]] && echo "Robot model unspecified. Use simple configuration." && return 0
+  echo "Usage: $SCRIPT_NAME <robot_model> [ros_version]"
+  exit 1
+}
+
+validate_robot_model() {
+  local model="$1"
+  if [[ -z "$model" || ! " ${VALID_ROBOT_MODELS[*]} " =~ " $model " ]]; then
+    echo "Error: Invalid robot model: $model. Valid: ${VALID_ROBOT_MODELS[*]}" >&2
+    echo "Usage: $SCRIPT_NAME <robot_model> [ros_version]" >&2
+    exit 1
+  fi
+  echo "$model"
+}
+
+validate_ros_version() {
+  local version="${1:-}"
+  if [[ -z "$version" && -n "$IMAGE_TYPE" ]]; then
+    version="${IMAGE_TYPE,,}"
+  fi
+
+  if [[ " ${VALID_ROS_VERSIONS[*]} " == *" $version "* ]]; then
+    if [[ "$version" == "jazzy" || "$version" == "humble" ]]; then
+      version="ros2_${version}"
+    fi
+    if [[ "$version" == "noetic" ]]; then
+      version="ros_${version}"
+    fi
+    echo "$version"
+  else
+    echo "Error: Invalid ROS version: $version. Valid: ${VALID_ROS_VERSIONS[*]}" >&2
+    echo "Usage: $SCRIPT_NAME <robot_model> [ros_version]" >&2
+    exit 1
+  fi
+}
+
+set_robot_env() {
+  local name="$1"
+  local value="$2"
+  local env_file="/etc/environment"
+  [ -f "$env_file" ] || touch "$env_file"
+
+  if grep -q "^$name=" "$env_file"; then
+    sudo sed -i "s/^$name=.*/$name=$value/" "$env_file"
+  else
+    echo "$name=$value" | sudo tee -a "$env_file" > /dev/null
+  fi
+}
+
+robot_config() {
+  local model="$1"
+  local ros_version="$2"
+  local folder="$model"
+
+  [[ "$model" == "lynx" || "$model" == "panther" ]] && folder="husarion_ugv"
+
+  local config_path="$SCRIPT_DIR/robots/$folder/$ros_version"
+  if [[ -d "$config_path" ]]; then
+    cp -rp "$SCRIPT_DIR/robots/helpers.sh" /home/husarion/
+    cp -rp "$config_path/"* /home/husarion/
+    bash "$SCRIPT_DIR/robots/$folder/custom_config.sh" "$model" "$ros_version"
+  else
+    echo "Warning: Config dir \"$config_path\" not found. Skipping robot-specific setup."
+    exit
+  fi
+}
+
+setup_motd() {
+  local folder="$1"
+  local arch
+  arch=$(uname -m)
+
+  local deb_arch
+  case "$arch" in
+    x86_64)  deb_arch="amd64" ;;
+    aarch64) deb_arch="arm64" ;;
+    *) echo "Unsupported architecture: $arch"; exit 1 ;;
+  esac
+
+  local deb_file
+  deb_file=$(find "$SCRIPT_DIR/robots/$folder" -maxdepth 1 -type f -name "*husarion-motd-*-${deb_arch}.deb" | head -n 1)
+
+  [[ -z "$deb_file" ]] && { echo "Error: No .deb file for arch $deb_arch"; exit 1; }
+
+  echo "Installing MOTD package: $deb_file"
+  dpkg -i "$deb_file" > /dev/null
+}
+
+network_setup() {
+  local folder="$1"
+
+  echo "Resetting Husarnet IPv6 and network configuration"
+  cp "$SCRIPT_DIR/robots/$folder/netplan.yaml" /etc/netplan/01-network-manager-all.yaml
+  chmod 600 /etc/netplan/01-network-manager-all.yaml
+
+  rm -rf /var/lib/husarnet
+
+  echo "Generating new SSH credentials"
+  : > /root/.ssh/authorized_keys
+  : > /root/.ssh/known_hosts
+  : > /home/husarion/.ssh/authorized_keys
+  : > /home/husarion/.ssh/known_hosts
+  rm -rf /etc/ssh/ssh_host_*
+  ssh-keygen -A
+}
+
+# Main
+check_root
+
+print_header "Resizing the file system"
+resize_filesystem
+
+print_header "Validation and configuration"
+check_args "$@"
+if [[ -n "${1:-}" ]]; then
+  robot_model=$(validate_robot_model "$1")
+  ros_version=$(validate_ros_version "${2:-}")
+  echo "Robot model: $robot_model"
+  echo "ROS version: $ros_version"
+  robot_config "$robot_model" "$ros_version"
+
+  robot_folder="$robot_model"
+  [[ "$robot_model" == "lynx" || "$robot_model" == "panther" ]] && robot_folder="husarion_ugv"
+
+  print_header "Setting up MOTD"
+  setup_motd "$robot_folder"
+
+  print_header "Resetting network and SSH credentials"
+  network_setup "$robot_folder"
+
+  if [[ "$ros_version" == "ros2_jazzy" || "$ros_version" == "ros2_humble" ]]; then
+    snap_version="${ros_version#ros2_}"  # Remove 'ros2_' prefix for compatibility
+  fi
+  if [[ "$ros_version" == "ros_noetic" ]]; then
+    snap_version="${ros_version#ros_}"  # Remove 'ros_' prefix for compatibility
+  fi
+  set_robot_env SNAP_VERSION "$snap_version"
 fi
 
-mkdir /home/husarion/.ros
-chown husarion:husarion /home/husarion/.ros
-
-sudo chmod 600 /etc/netplan/01-network-manager-all.yaml
-
-# Generating new SSH credentials
-sudo echo "" > /root/.ssh/authorized_keys
-sudo echo "" > /root/.ssh/known_hosts
-sudo echo "" > /home/husarion/.ssh/authorized_keys
-sudo echo "" > /home/husarion/.ssh/known_hosts
-sudo rm -rf /etc/ssh/ssh_host_*
-
-ssh-keygen -A
-# systemctl restart ssh.service 
-
-# Print success message
-echo ""
-echo "Configuration files copied successfully for robot model \"$robot_model\" and ROS version \"$ros_version\""
+echo
+print_header "✅ Configuration completed!"

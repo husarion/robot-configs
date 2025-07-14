@@ -1,3 +1,4 @@
+---
 network:
   version: 2
   renderer: NetworkManager
@@ -12,7 +13,7 @@ network:
       optional: true
       addresses:
         - 192.168.77.2/24
-  
+
   wifis:
 
     # standard Wi-Fi config (client)
@@ -22,12 +23,12 @@ network:
       dhcp6: true
       optional: true
       access-points:
-        "PLACE_YOUR_WIFI_SSID_HERE":
-          password: "PLACE_YOUR_WIFI_PASSWORD_HERE"
+        PLACE_YOUR_WIFI_SSID_HERE:
+          password: PLACE_YOUR_WIFI_PASSWORD_HERE
 
     # access point Wi-Fi config
     # ========================================
-    # wlan0: 
+    # wlan0:
     #   dhcp4: no
     #   dhcp6: no
     #   addresses:

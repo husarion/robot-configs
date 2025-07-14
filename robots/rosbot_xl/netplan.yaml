@@ -1,3 +1,4 @@
+---
 network:
   version: 2
   renderer: NetworkManager
@@ -13,6 +14,15 @@ network:
       addresses:
         - 192.168.77.2/24
 
+    all-enps:
+      match:
+        name: enP8p1s*
+      dhcp4: no
+      dhcp6: no
+      optional: true
+      addresses:
+        - 192.168.77.2/24
+
   wifis:
     # ========================================
     # standard Wi-Fi config (client)
@@ -22,12 +32,12 @@ network:
       dhcp6: true
       optional: true
       access-points:
-        "PLACE_YOUR_WIFI_SSID_HERE":
-          password: "PLACE_YOUR_WIFI_PASSWORD_HERE"
+        PLACE_YOUR_WIFI_SSID_HERE:
+          password: PLACE_YOUR_WIFI_PASSWORD_HERE
 
     # ========================================
     # access point Wi-Fi config
-    # repace "channel" with the number permitted in your country
+    # replace "channel" with the number permitted in your country
     # https://en.wikipedia.org/wiki/List_of_WLAN_channels
     # ========================================
     # wlan0:
