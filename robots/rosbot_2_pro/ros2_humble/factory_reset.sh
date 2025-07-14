@@ -40,6 +40,7 @@ sudo cp $LAYOUT_FILE /var/snap/husarion-webui/common/
 sudo snap set husarion-webui webui.layout=$ROBOT_MODEL
 
 print_header "Setting up default DDS params on host"
+/var/snap/rosbot/common/manage_ros_env.sh
 sudo /var/snap/rosbot/common/manage_ros_env.sh
 
 print_header "Start all snaps"
