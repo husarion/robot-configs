@@ -59,6 +59,9 @@ validate_ros_version() {
   local version="${1:-}"
   if [[ -z "$version" && -n "$IMAGE_TYPE" ]]; then
     version="${IMAGE_TYPE,,}"
+    if [[ "$version" == "ros2_foxy" ]]; then # ROSbot 2 PRO uses ROS 2 Humble
+      version="ros2_humble"
+    fi
   fi
 
   if [[ " ${VALID_ROS_VERSIONS[*]} " == *" $version "* ]]; then
