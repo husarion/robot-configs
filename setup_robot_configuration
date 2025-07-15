@@ -138,11 +138,11 @@ network_setup() {
   rm -rf /var/lib/husarnet
 
   echo "Generating new SSH credentials"
-  : > /root/.ssh/authorized_keys
-  : > /root/.ssh/known_hosts
-  : > /home/husarion/.ssh/authorized_keys
-  : > /home/husarion/.ssh/known_hosts
-  rm -rf /etc/ssh/ssh_host_*
+  : > /root/.ssh/authorized_keys || true
+  : > /root/.ssh/known_hosts || true
+  : > /home/husarion/.ssh/authorized_keys || true
+  : > /home/husarion/.ssh/known_hosts || true
+  rm -rf /etc/ssh/ssh_host_* || true
   ssh-keygen -A
 }
 
