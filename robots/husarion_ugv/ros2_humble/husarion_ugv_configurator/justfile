@@ -33,7 +33,8 @@ update_config:
 
 restart_driver:
   @echo "Restarting driver..."
-  just _ssh_command "docker compose up --force-recreate -d"
+  just _ssh_command "bash -l -c 'docker compose up --force-recreate -d' >/dev/null 2>&1"
+  @echo "Driver restarted successfully."
 
 driver_logs *additional_args:
   @echo "Starting driver logs..."
