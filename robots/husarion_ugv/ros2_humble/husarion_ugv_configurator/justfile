@@ -93,4 +93,4 @@ install: init_config
   deactivate
 
 husarion_ugv_configurator:
-  ./configurator.py
+  COLORTERM=truecolor ./configurator.py
