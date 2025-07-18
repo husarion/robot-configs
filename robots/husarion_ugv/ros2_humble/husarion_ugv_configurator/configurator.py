@@ -303,10 +303,14 @@ class Configurator(App):
         robot_model = re.search(r"ROBOT_MODEL_NAME=(.+)", output)
         robot_version = re.search(r"ROBOT_VERSION=(.+)", output)
         robot_serial_no = re.search(r"ROBOT_SERIAL_NO=(.+)", output)
+        system_version = re.search(r"SYSTEM_BUILD_VERSION=(.+)", output)
+        driver_version = re.search(r"DRIVER_VERSION=.*:([^:\n]+)", output)
 
         robot_model = robot_model.group(1) if robot_model else "----"
         robot_version = robot_version.group(1) if robot_version else "----"
         robot_serial_no = robot_serial_no.group(1) if robot_serial_no else "----"
+        system_version = system_version.group(1) if system_version else "----"
+        driver_version = driver_version.group(1) if driver_version else "----"
 
         robot_info_str = Text()
         robot_info_str.append("Robot Information\n", style="bold")
@@ -317,6 +321,10 @@ class Configurator(App):
         robot_info_str.append(f"{robot_version}\n")
         robot_info_str.append("Serial No: ", style="bold")
         robot_info_str.append(f"{robot_serial_no}")
+        robot_info_str.append("\nSystem Version: ", style="bold")
+        robot_info_str.append(f"{system_version}\n")
+        robot_info_str.append("Driver Version: ", style="bold")
+        robot_info_str.append(f"{driver_version}\n")
         robot_info = self.query_one("#robot_info")
         robot_info.update(robot_info_str)
 
