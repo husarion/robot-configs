@@ -219,7 +219,7 @@ class DriverLogsScreen(Screen):
         for strip in strips:
             for segment in strip:
                 text.append(segment.text, segment.style)
-                text.append("\n")
+            text.append("\n")
 
         ansi_text = self._text_to_ansi(text)
 
