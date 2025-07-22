@@ -8,6 +8,8 @@ import select
 import subprocess
 import time
 
+from io import StringIO
+from rich.console import Console
 from rich.text import Text
 from textual import work
 from textual.app import App, ComposeResult
@@ -22,8 +24,8 @@ from textual.widgets import (
     Label,
     ListView,
     ListItem,
-    Log,
     OptionList,
+    RichLog,
 )
 from textual.worker import get_current_worker
 
@@ -53,14 +55,14 @@ husarion_light_theme = Theme(
 )
 
 
-class CommandHandler(Log):
+class CommandHandler(RichLog):
     log_text = reactive("")
 
     def on_mount(self):
         self.auto_scroll = True
 
     def watch_log_text(self, value: str) -> None:
-        self.write_line(value)
+        self.write(Text.from_ansi(value))
 
     @work(exclusive=True, thread=True)
     def run_command(self, command: str) -> None:
@@ -178,7 +180,7 @@ class DriverLogsScreen(Screen):
         with Container(id="tools"):
             yield CustomButton("Refresh", id="refresh", variant="primary")
             yield CustomButton("Save to file", id="save")
-        yield CommandHandler(id="driver_logs")
+        yield CommandHandler(id="driver_logs", wrap=True)
 
     def on_screen_resume(self) -> None:
         self._run_logs_command()
@@ -204,12 +206,24 @@ class DriverLogsScreen(Screen):
         self.query_one(CommandHandler).run_command(command)
 
     def _save_logs(self) -> None:
-        logs = self.query_one(CommandHandler).lines
+        strips = self.query_one(CommandHandler).lines
+        text = Text()
+        for strip in strips:
+            for segment in strip:
+                text.append(segment.text, segment.style)
+                text.append("\n")
+
+        ansi_text = self._text_to_ansi(text)
+
         date = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         with open(f"driver-logs-{date}.txt", "w") as file:
-            for line in logs:
-                if line.strip():
-                    file.write(line + "\n")
+            file.write(ansi_text)
+
+    def _text_to_ansi(self, strip_obj) -> str:
+        buffer = StringIO()
+        console = Console(file=buffer, force_terminal=True, color_system="truecolor")
+        console.print(strip_obj, end="")
+        return buffer.getvalue()
 
 
 class Configurator(App):
@@ -220,8 +234,6 @@ class Configurator(App):
         ("d", "toggle_dark", "Toggle dark mode"),
     ]
     CSS_PATH = os.path.join(os.path.dirname(__file__), "style.tcss")
-
-    log_text = reactive("")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -293,10 +305,6 @@ class Configurator(App):
 
     def on_list_view_highlighted(self, event: ListView.Highlighted) -> None:
         event.item.scroll_visible()
-
-    def watch_log_text(self, value: str) -> None:
-        log = self.query_one(Log)
-        log.write_line(value)
 
     async def _update_robot_info(self) -> None:
         output = await self.query_one(CommandHandler).run_command_wait("just robot_info")

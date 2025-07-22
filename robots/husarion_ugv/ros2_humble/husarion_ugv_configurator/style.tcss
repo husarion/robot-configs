@@ -38,7 +38,7 @@ OutputLabel {
     text-align: left;
 }
 
-Log {
+RichLog {
     padding: 1 1;
     margin: 1 1;
 }
