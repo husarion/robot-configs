@@ -62,7 +62,15 @@ class CommandHandler(RichLog):
         self.auto_scroll = True
 
     def watch_log_text(self, value: str) -> None:
-        self.write(Text.from_ansi(value))
+        text = Text.from_ansi(value)
+
+        # from_ansi method, for some reason sometimes adds double '\n' at the end.
+        # This is a workaround to make logs appear nicely formatted,
+        # but may in some cases where double '\n' were intended produce incorrect output.
+        # This is a price I'm willing to pay.
+        lines = text.split("\n\n")
+        for line in lines:
+            self.write(line)
 
     @work(exclusive=True, thread=True)
     def run_command(self, command: str) -> None:
