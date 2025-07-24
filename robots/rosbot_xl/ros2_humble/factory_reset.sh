@@ -35,7 +35,7 @@ configuration="$1"
 
 if [[ -n "$configuration" ]]; then
     if [[ " ${VALID_CONFIGURATIONS[@]} " =~ " ${configuration} " ]]; then
-        set_robot_env "ROBOT_CONFIGURATION" "$configuration"
+        set_env "ROBOT_CONFIGURATION" "$configuration"
     else
         print_usage
         exit 1
@@ -65,7 +65,7 @@ esac
 print_header "Reinstall snaps"
 reinstall_snaps "${SNAP_LIST[@]}"
 
-print_header "Setting up ROSbot snap $configuration"
+print_header "Setting up rosbot snap for ROSbot XL $configuration"
 sudo /var/snap/rosbot/common/post_install.sh
 sudo snap set rosbot driver.robot-model=$ROBOT_MODEL
 sudo snap set rosbot driver.configuration=$configuration
