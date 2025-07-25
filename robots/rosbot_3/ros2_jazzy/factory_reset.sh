@@ -8,6 +8,13 @@ ROBOT_MODEL=rosbot
 LAYOUT_FILE="$SCRIPT_DIR/foxglove-rosbot.json"
 VALID_CONFIGURATIONS=("3" "3_pro")
 
+# ─── force root execution and remember the caller ──────────────────────────────
+if [[ $EUID -ne 0 ]]; then
+    echo "Please start this script with: sudo $0 <configuration>" >&2
+    exit 1
+fi
+ORIG_USER="${SUDO_USER:-root}"   # the login that invoked sudo
+
 # Functions
 print_usage() {
 echo -e "\e[1mInvalid configuration.\e[0m"
@@ -28,8 +35,6 @@ fi
 
 # Main
 start_time=$(date +%s)
-
-check_user
 
 configuration="$1"
 
@@ -54,35 +59,35 @@ print_header "Reinstall snaps"
 reinstall_snaps "${SNAP_LIST[@]}"
 
 print_header "Setting up rosbot snap for ROSbot $configuration"
-sudo /var/snap/rosbot/common/post_install.sh
-sudo snap set rosbot driver.robot-model=$ROBOT_MODEL
-sudo rosbot.flash
+/var/snap/rosbot/common/post_install.sh
+snap set rosbot driver.robot-model=$ROBOT_MODEL
+rosbot.flash
 
 print_header "Setting up DepthAI snap"
-sudo snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
-sudo snap set husarion-depthai driver.parent-frame=camera_mount_link
+snap connect husarion-depthai:shm-plug husarion-depthai:shm-slot
+snap set husarion-depthai driver.parent-frame=camera_mount_link
 
 print_header "Setting up RPLIDAR snap"
-sudo snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
+snap connect husarion-rplidar:shm-plug husarion-rplidar:shm-slot
 if [[ $configuration == "3" ]]; then
-    sudo snap set husarion-rplidar configuration=c1
-else if [[ $configuration == "3_pro" ]]; then
-    sudo snap set husarion-rplidar configuration=s2
+    snap set husarion-rplidar configuration=c1
+elif [[ $configuration == "3_pro" ]]; then
+    snap set husarion-rplidar configuration=s2
 else
     echo -e "\e[1mInvalid configuration for RPLIDAR.\e[0m"
 fi
 
 print_header "Setting up WebUI snap"
-sudo cp $LAYOUT_FILE /var/snap/husarion-webui/common/
-sudo snap set husarion-webui webui.layout=$ROBOT_MODEL
+cp $LAYOUT_FILE /var/snap/husarion-webui/common/
+snap set husarion-webui webui.layout=$ROBOT_MODEL
 
-print_header "Setting up default DDS params on host"
-/var/snap/rosbot/common/manage_ros_env.sh
-sudo /var/snap/rosbot/common/manage_ros_env.sh
+print_header "Setting up default DDS params on host (for root and $ORIG_USER)"
+sudo -u "$ORIG_USER" /var/snap/rosbot/common/manage_ros_env.sh   # user‑side
+/var/snap/rosbot/common/manage_ros_env.sh                        # root‑side
 
 print_header "Start all snaps"
 for snap in "${SNAP_LIST[@]}"; do
-    sudo "$snap".start
+    "$snap".start
 done
 
 duration=$(( $(date +%s) - start_time ))
