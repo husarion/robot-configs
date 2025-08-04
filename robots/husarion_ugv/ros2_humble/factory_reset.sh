@@ -33,6 +33,15 @@ for snap in "${SNAP_LIST[@]}"; do
     sudo "$snap".start
 done
 
+echo "---------------------------------------"
+echo "Installing Husarion UGV Configurator..."
+
+rm -rf ~/husarion_ugv_configurator
+git clone https://github.com/husarion/husarion_ugv_configurator.git ~/husarion_ugv_configurator
+
+cd ~/husarion_ugv_configurator
+just install
+
 end_time=$(date +%s)
 duration=$(( end_time - start_time ))
 
