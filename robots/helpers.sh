@@ -39,7 +39,7 @@ reinstall_snaps() {
     done
 }
 
-set_robot_env() {
+set_env() {
   local name="$1"
   local value="$2"
   local env_file="/etc/environment"
@@ -50,4 +50,12 @@ set_robot_env() {
   else
     echo "$name=$value" | sudo tee -a "$env_file" > /dev/null
   fi
+}
+
+remove_env() {
+  local name="$1"
+  local env_file="/etc/environment"
+  [ -f "$env_file" ] || return 0
+
+  sudo sed -i "/^$name=/d" "$env_file"
 }

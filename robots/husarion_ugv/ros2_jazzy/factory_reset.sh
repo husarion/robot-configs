@@ -1,11 +1,12 @@
 #!/bin/bash
 set -e
 
-# Check if the script is being run as a normal user
-if [ "$(id -u)" -eq 0 ]; then
-    echo "Error: This script must be run as a normal user."
+# ─── force root execution and remember the caller ──────────────────────────────
+if [[ $EUID -ne 0 ]]; then
+    echo "Please start this script with: sudo $0" >&2
     exit 1
 fi
+ORIG_USER="${SUDO_USER:-root}"   # the login that invoked sudo
 
 SNAP_LIST=(
     husarion-shutdown
@@ -16,21 +17,21 @@ start_time=$(date +%s)
 for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
     echo "removing the \"$snap\" snap"
-    sudo snap remove "$snap"
+    snap remove "$snap"
 done
 
 for snap in "${SNAP_LIST[@]}"; do
     echo "---------------------------------------"
     echo "Installing the \"$snap\" snap"
-    sudo snap install "$snap"
-    sudo "$snap".stop
+    snap install "$snap"
+    "$snap".stop
 done
 
 echo "---------------------------------------"
 echo "Start all snap"
 
 for snap in "${SNAP_LIST[@]}"; do
-    sudo "$snap".start
+    "$snap".start
 done
 
 echo "---------------------------------------"

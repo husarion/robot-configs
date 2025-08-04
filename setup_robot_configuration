@@ -7,6 +7,13 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 VALID_ROS_VERSIONS=("noetic" "jazzy" "humble" "ros_noetic" "ros2_jazzy" "ros2_humble")
 VALID_ROBOT_MODELS=("rosbot_xl" "rosbot_3" "rosbot_2r" "rosbot_2_pro" "panther" "lynx" "husarion_ugv")
 
+# Source
+if [ -f "$SCRIPT_DIR/robots/helpers.sh" ]; then
+    source "$SCRIPT_DIR/robots/helpers.sh" # Working inside repo
+else
+    source "$SCRIPT_DIR/helpers.sh" # Working on Husarion OS after setup_robot_configuration
+fi
+
 # Functions
 check_root() {
   if [[ "$EUID" -eq 0 ]]; then
@@ -59,6 +66,9 @@ validate_ros_version() {
   local version="${1:-}"
   if [[ -z "$version" && -n "$IMAGE_TYPE" ]]; then
     version="${IMAGE_TYPE,,}"
+    if [[ "$version" == "ros2_foxy" ]]; then # ROSbot 2 PRO uses ROS 2 Humble
+      version="ros2_humble"
+    fi
   fi
 
   if [[ " ${VALID_ROS_VERSIONS[*]} " == *" $version "* ]]; then
@@ -73,19 +83,6 @@ validate_ros_version() {
     echo "Error: Invalid ROS version: $version. Valid: ${VALID_ROS_VERSIONS[*]}" >&2
     echo "Usage: $SCRIPT_NAME <robot_model> [ros_version]" >&2
     exit 1
-  fi
-}
-
-set_robot_env() {
-  local name="$1"
-  local value="$2"
-  local env_file="/etc/environment"
-  [ -f "$env_file" ] || touch "$env_file"
-
-  if grep -q "^$name=" "$env_file"; then
-    sudo sed -i "s/^$name=.*/$name=$value/" "$env_file"
-  else
-    echo "$name=$value" | sudo tee -a "$env_file" > /dev/null
   fi
 }
 
@@ -138,11 +135,11 @@ network_setup() {
   rm -rf /var/lib/husarnet
 
   echo "Generating new SSH credentials"
-  : > /root/.ssh/authorized_keys
-  : > /root/.ssh/known_hosts
-  : > /home/husarion/.ssh/authorized_keys
-  : > /home/husarion/.ssh/known_hosts
-  rm -rf /etc/ssh/ssh_host_*
+  : > /root/.ssh/authorized_keys || true
+  : > /root/.ssh/known_hosts || true
+  : > /home/husarion/.ssh/authorized_keys || true
+  : > /home/husarion/.ssh/known_hosts || true
+  rm -rf /etc/ssh/ssh_host_* || true
   ssh-keygen -A
 }
 
@@ -176,7 +173,8 @@ if [[ -n "${1:-}" ]]; then
   if [[ "$ros_version" == "ros_noetic" ]]; then
     snap_version="${ros_version#ros_}"  # Remove 'ros_' prefix for compatibility
   fi
-  set_robot_env SNAP_VERSION "$snap_version"
+  set_env SNAP_VERSION "$snap_version"
+  remove_env "ROBOT_CONFIGURATION" # Clean up to rosbot factory_reset work as expected after setup_robot_configuration again use 
 fi
 
 echo

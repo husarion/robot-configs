@@ -32,8 +32,8 @@ network:
       dhcp6: true
       optional: true
       access-points:
-        PLACE_YOUR_WIFI_SSID_HERE:
-          password: PLACE_YOUR_WIFI_PASSWORD_HERE
+        "PLACE_YOUR_WIFI_SSID_HERE":
+          password: "PLACE_YOUR_WIFI_PASSWORD_HERE"
 
     # ========================================
     # access point Wi-Fi config
