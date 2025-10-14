@@ -29,7 +29,7 @@ reinstall_snaps() {
 
         sudo snap install "$snap" --channel="$SNAP_VERSION"
         sudo snap set "$snap" \
-            ros.transport=udp-lo \
+            ros.transport=udp \
             ros.localhost-only='' \
             ros.domain-id=0 \
             ros.namespace=''
