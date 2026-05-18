@@ -97,7 +97,8 @@ robot_config() {
   if [[ -d "$config_path" ]]; then
     cp -rp "$SCRIPT_DIR/robots/helpers.sh" /home/husarion/
     cp -rp "$config_path/"* /home/husarion/
-    bash "$SCRIPT_DIR/robots/$folder/custom_config.sh" "$model" "$ros_version"
+    local custom_config="$SCRIPT_DIR/robots/$folder/custom_config.sh"
+    [[ -f "$custom_config" ]] && bash "$custom_config" "$model" "$ros_version" || true
   else
     echo "Warning: Config dir \"$config_path\" not found. Skipping robot-specific setup."
     exit
